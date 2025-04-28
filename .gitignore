@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtualenv
+venv/
+ENV/
+env/
+.venv/
+.Python
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# VS Code
+.vscode/
+
+# Pytest / test cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MyPy / Pylint
+.mypy_cache/
+.pylint.d/
+
+# Docker
+*.pid
+*.seed
+*.backup
+.docker/
+docker-compose.override.yml
+
+# Environments
+.env
+.env.*
+
+# Node.js (if you use it for frontend build)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# System
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Database
+*.sqlite3
+*.sqlite
+*.db
+
+# Other IDEs
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Coverage reports
+coverage.xml
+*.cover
+
+# Migration conflicts (optional, sometimes useful)
+*.merge_backup
+
+# Temporary files
+*.swp
+*.bak
+*.tmp
+
+# Pipenv
+Pipfile.lock
+
+# pyenv
+.python-version

@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!--Generator: Xara Designer (www.xara.com), SVG filter version: 6.5.0.21-->
+<svg fill="none" fill-rule="evenodd" stroke="black" stroke-width="0.501" stroke-linejoin="bevel" stroke-miterlimit="10" font-family="Times New Roman" font-size="16" style="font-variant-ligatures:none" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" overflow="visible" width="307.478pt" height="126.698pt" viewBox="187.336 -530.267 307.478 126.698">
+ <defs>
+	</defs>
+ <g id="Layer 1" transform="scale(1 -1)">
+  <g id="Group" stroke="none" fill="#190040">
+   <text xml:space="preserve" transform="translate(408.591 418.622) scale(1 -1)" kerning="auto" font-size="22.393" stroke-width="10.026" stroke-linejoin="round" stroke-linecap="round" font-family="Oxygen" font-weight="bold"><tspan x="0" y="0">Services</tspan></text>
+   <g id="Group_1" stroke-linejoin="miter" stroke-width="0.284">
+    <path d="M 240.383,403.569 L 223.386,420.307 L 240.121,437.304 L 255.56,452.979 C 258.177,455.142 260.514,457.623 262.519,460.361 C 263.582,461.749 264.508,463.203 265.28,464.712 C 270.837,475.547 269.023,489.198 259.897,498.179 C 254.451,503.547 247.244,506.468 239.598,506.411 C 231.951,506.352 224.783,503.322 219.418,497.869 C 208.341,486.627 208.483,468.467 219.728,457.392 L 231.531,445.764 L 214.794,428.77 L 202.987,440.393 C 185.326,457.792 182.588,484.624 194.896,504.946 C 194.922,504.984 194.939,505.014 194.961,505.051 C 195.242,505.524 195.535,505.986 195.834,506.439 C 195.933,506.589 196.034,506.738 196.139,506.89 C 197.955,509.607 200.045,512.194 202.421,514.613 C 212.592,524.934 225.983,530.162 239.412,530.266 C 252.843,530.367 266.316,525.343 276.638,515.176 C 297.287,494.839 297.544,461.614 277.207,440.959 L 240.383,403.569 Z M 222.646,476.935 C 222.624,479.822 223.291,482.551 224.49,484.976 C 227.383,490.851 233.413,494.909 240.403,494.96 C 247.388,495.016 253.468,491.068 256.448,485.252 C 257.701,482.833 258.408,480.112 258.433,477.208 C 258.504,467.332 250.553,459.268 240.676,459.19 C 230.8,459.116 222.724,467.058 222.646,476.935 Z M 270.296,484.551 C 270.355,477.358 268.524,470.595 265.28,464.712 C 268.524,470.595 270.355,477.358 270.296,484.551 Z M 233.593,524.602 C 254.051,522.681 270.135,505.544 270.296,484.551 C 270.135,505.544 254.051,522.681 233.593,524.602 Z M 229.448,524.78 C 215.563,524.675 203.365,517.593 196.139,506.89 C 203.365,517.593 215.563,524.675 229.448,524.78 Z M 233.593,524.602 C 232.23,524.732 230.847,524.791 229.448,524.78 C 230.847,524.791 232.23,524.732 233.593,524.602 Z" marker-start="none" marker-end="none"/>
+   </g>
+   <text xml:space="preserve" transform="translate(291.56 446.061) scale(1 -1)" kerning="auto" font-size="103.292" stroke-width="7.705" stroke-linejoin="round" stroke-linecap="round" font-family="Oxygen" font-weight="bold"><tspan x="0" y="0">plus</tspan></text>
+  </g>
+ </g>
+</svg>
