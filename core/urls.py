@@ -65,6 +65,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/health-check/',HealthCheckView.as_view(),name='health-check'),
     path('api/user/',include('users.urls'),name='user-apis'),
+    path('api/category/',include('categories.urls'),name='category-apis'),
 ]
 
 

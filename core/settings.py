@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'cryptography',
-    'users'
+    'users',
+    'categories',
 ]
 
 
