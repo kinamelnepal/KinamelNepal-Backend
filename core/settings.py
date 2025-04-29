@@ -31,7 +31,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
 
 # CORS_ALLOWED_ORIGINS = os.environ.get('ALLOWED_HOSTS').split(',')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
+# ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = [
+    'localhost',   
+    '*'
+]
 CORS_ORIGIN_ALLOW_ALL = True   # allow all origins
 # Application definition
 INSTALLED_APPS = [
