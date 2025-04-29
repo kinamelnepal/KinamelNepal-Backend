@@ -34,7 +34,7 @@ DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
 # ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 ALLOWED_HOSTS = [
     'localhost',   
-    '*'
+    '*',
     'localhost:3000',
     'http://localhost:3000'
 ]
