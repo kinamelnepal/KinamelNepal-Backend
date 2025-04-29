@@ -29,7 +29,7 @@ class Product(BaseModel):
         ('Offline', 'Offline'),
     ]
     category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)  
-    sale = models.CharField(max_length=50, blank=True, null=True, choices=SALE_CHOICES,default='New')
+    sale = models.CharField(max_length=50, blank=True, null=True,choices=SALE_CHOICES,default='New')
     image = models.ImageField(upload_to='products/images/', null=True, blank=True, verbose_name="Product Image")
     image_two = models.ImageField(upload_to='products/images/', null=True, blank=True, verbose_name="Product Image 2")
     new_price = models.DecimalField(max_digits=10, decimal_places=2)
