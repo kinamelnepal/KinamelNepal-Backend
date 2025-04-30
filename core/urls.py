@@ -67,6 +67,7 @@ urlpatterns = [
     path('api/user/',include('users.urls'),name='user-apis'),
     path('api/category/',include('categories.urls'),name='category-apis'),
     path('api/product/',include('products.urls'),name='product-apis'),
+    path('api/contact/',include('contacts.urls'),name='contact-apis'),
 ]
 
 
