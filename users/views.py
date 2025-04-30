@@ -25,7 +25,7 @@ from .serializers import UserSerializer, ChangePasswordSerializer,UserRegisterSe
                 type=str,
                 description='If set to `true`, disables pagination and returns all rooms.',
                 required=False,
-                enum=['true', 'false']  # Optional: You can specify allowed values
+                enum=['true', 'false'] 
             )]
     ),
     retrieve=extend_schema(
@@ -64,14 +64,14 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         if self.action in ['register', 'login','create']:
             return [AllowAny()]
         
-        elif self.action in ['logout']:
+        elif self.action in ['logout','profile','update_profile','change_password']:
             return [IsAuthenticated()]
 
         elif self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             return  [IsAuthenticated(), IsAdminUserOrSelfOrHasPermission()]
         
-        elif self.action in ['list','profile','update_profile','change_password']:
-            return [IsAuthenticated(), IsAdminUser() ]
+        elif self.action in ['list']:
+            return [IsAuthenticated(), IsAdminUser()]
 
     def paginate_queryset(self, queryset):
         """
