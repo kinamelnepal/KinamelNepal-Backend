@@ -10,10 +10,9 @@ from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExam
 from .permissions import IsAdminUserOrSelfOrHasPermission
 from core.mixins import MultiLookupMixin
 from .filters import UserFilter
-from .serializers import UserListSerializer
 from django.contrib.auth.hashers import check_password, make_password
 from .models import User
-from .serializers import UserSerializer, ChangePasswordSerializer
+from .serializers import UserSerializer, ChangePasswordSerializer,UserRegisterSerializer
 
 @extend_schema_view(
     list=extend_schema(
@@ -62,7 +61,7 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     lookup_url_kwarg = 'pk' 
 
     def get_permissions(self):
-        if self.action in ['register', 'login']:
+        if self.action in ['register', 'login','create']:
             return [AllowAny()]
         
         elif self.action in ['logout']:
@@ -71,7 +70,7 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         elif self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             return  [IsAuthenticated(), IsAdminUserOrSelfOrHasPermission()]
         
-        elif self.action in ['list', 'create','profile','update_profile','change_password']:
+        elif self.action in ['list','profile','update_profile','change_password']:
             return [IsAuthenticated(), IsAdminUser() ]
 
     def paginate_queryset(self, queryset):
@@ -96,27 +95,14 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     filterset_class = UserFilter 
 
     def get_serializer_class(self):
-        """Use a lightweight serializer for list views"""
-        if self.action == 'list':
-            return UserListSerializer
         return UserSerializer
 
     @extend_schema(
         summary="Register a new user",
         description="Register a new user by providing their details. Returns the created user and JWT tokens.",
         tags=["Users"],
-        request={
-            "application/json": {
-                "type": "object",
-                "properties": {
-                    "email": {"type": "string", "example": "user@gmail.com"},
-                    "password": {"type": "string", "example": "password@123"},
-                    "first_name": {"type": "string", "example": "John"},
-                    "last_name": {"type": "string", "example": "Doe"},
-                },
-                "required": ["email", "password", "first_name", "last_name"]
-            }
-        },
+        # serializer=UserSerializer,
+        request= UserRegisterSerializer(),
         responses={
             201: OpenApiResponse(
                 response={

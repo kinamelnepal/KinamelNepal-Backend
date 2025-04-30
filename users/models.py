@@ -17,7 +17,7 @@ class UserManager(BaseUserManager, BaseModelManager):
                 raise ValueError("Password is required for admin users")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        validate_password(password)  # Uses Django's built-in password validators
+        validate_password(password)  
 
         user.set_password(password)
         user.save(using=self._db)
@@ -28,19 +28,15 @@ class UserManager(BaseUserManager, BaseModelManager):
             raise ValueError("Password is required")
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_staff', True)
-        validate_password(password)  # Uses Django's built-in password validators
+        validate_password(password)  
         return self.create_user(email, password, **extra_fields)
 
-# User Model
+
 class User(AbstractBaseUser, BaseModel):
     ROLES = [
-        ('cleaner', 'Cleaner'),
-        ('supervisor', 'Supervisor'),
-        ('senior supervisor', 'Senior Supervisor'),
-        ('room attendee', 'Room Attendee'),
+        ('buyer', 'Buyer'),
+        ('seller', 'Seller'),
         ('admin', 'Admin'),
-        ('staff','Staff'),
-        ('hotel-contact-person','Hotel Contact Person')
     ]
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -54,8 +50,14 @@ class User(AbstractBaseUser, BaseModel):
     )
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128,null=True,blank=True)
-    role = models.CharField(max_length=20, choices=ROLES)
+    role = models.CharField(max_length=20, choices=ROLES,default='buyer')
     avatar = models.FileField(upload_to="users/avatars/", blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    post_code = models.CharField(max_length=20, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     groups = models.ManyToManyField('auth.Group', related_name='users', blank=True) 
     objects = UserManager()
     USERNAME_FIELD = 'email'
