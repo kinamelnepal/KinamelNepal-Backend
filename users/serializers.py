@@ -8,7 +8,7 @@ class UserSerializer(BaseModelSerializer):
         model = User
         fields = [
             'id', 'uuid', 'slug', 'first_name', 'last_name', 'email', 'password', "is_superuser", "is_staff",
-            'role', 'avatar',
+            'role', 'avatar','address', 'country', 'state', 'city', 'post_code', 'phone_number',
             'created_at', 'updated_at'
         ]
         extra_kwargs = {'password': {'write_only': True}}
@@ -34,20 +34,19 @@ class UserSerializer(BaseModelSerializer):
                 validate_password(password)
             except Exception as e:
                 raise serializers.ValidationError({'password': list(e.messages)})
-            user.set_password(password)
+            instance.set_password(password)
         instance.save()
         return instance
 
-class UserListSerializer(serializers.ModelSerializer):
+class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'role', 'avatar', 'created_at', 'updated_at']
+        fields = [ 'first_name', 'last_name', 'email', 'avatar', 'password', 'address', 'country', 'state', 'city', 'post_code', 'phone_number']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
-
 
     def validate_old_password(self, value):
         user = self.context['request'].user
