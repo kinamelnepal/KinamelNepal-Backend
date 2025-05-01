@@ -74,7 +74,9 @@ INSTALLED_APPS = [
     'cryptography',
     'users',
     'categories',
-    'products'
+    'products',
+    'contacts',
+    'faqs',
 ]
 
 
