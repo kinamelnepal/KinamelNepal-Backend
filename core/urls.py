@@ -68,6 +68,7 @@ urlpatterns = [
     path('api/category/',include('categories.urls'),name='category-apis'),
     path('api/product/',include('products.urls'),name='product-apis'),
     path('api/contact/',include('contacts.urls'),name='contact-apis'),
+    path('api/faq/',include('faqs.urls'),name='faq-apis'),
 ]
 
 

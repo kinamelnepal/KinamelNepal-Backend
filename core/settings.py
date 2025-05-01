@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'categories',
     'products',
     'contacts',
+    'faqs',
 ]
 
 
