@@ -1,7 +1,7 @@
-import sys, os
+import sys
+import os
 
+# Add project path
 sys.path.insert(0, os.path.dirname(__file__))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'core.settings'
 
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+from app.wsgi import application  # app = your project folder
