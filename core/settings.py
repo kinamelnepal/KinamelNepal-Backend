@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'products',
     'contacts',
     'faqs',
+    'banners',
 ]
 
 
