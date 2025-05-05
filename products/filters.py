@@ -14,9 +14,11 @@ class ProductFilter(django_filters.FilterSet):
     # Adding range filters for these fields
     new_price_range = django_filters.RangeFilter(field_name='new_price')
     old_price_range = django_filters.RangeFilter(field_name='old_price')
+    quantity_range = django_filters.RangeFilter(field_name='quantity')
+    weight_range = django_filters.RangeFilter(field_name='weight')
     sku_range = django_filters.RangeFilter(field_name='sku')
     rating_range = django_filters.RangeFilter(field_name='rating')
 
     class Meta:
         model = Product
-        fields = ['brand', 'status', 'new_price', 'old_price', 'sale', 'sku', 'rating',  'location', 'new_price_range', 'old_price_range', 'sku_range', 'rating_range']
+        fields = ['brand', 'status', 'new_price', 'old_price', 'sale', 'sku', 'rating',  'location', 'new_price_range', 'old_price_range', 'sku_range', 'rating_range','weight_range','quantity_range']
