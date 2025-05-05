@@ -23,12 +23,15 @@ class Product(BaseModel):
         ('Bundle', 'Bundle'),
         ('Gift Set', 'Gift Set'),
         ('Subscription', 'Subscription'),
+        ('Trending', 'Trending'),
+        ('Best Deal', 'Best Deal'),
+
     ]
     LOCATION_CHOICES = [
         ('Online', 'Online'),
         ('Offline', 'Offline'),
     ]
-    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)  
+    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE, related_name='products', verbose_name="Product Category", null=True, blank=True)  
     sale = models.CharField(max_length=50, blank=True, null=True,choices=SALE_CHOICES,default='New')
     image = models.ImageField(upload_to='products/images/', null=True, blank=True, verbose_name="Product Image")
     image_two = models.ImageField(upload_to='products/images/', null=True, blank=True, verbose_name="Product Image 2")
@@ -40,11 +43,15 @@ class Product(BaseModel):
     location = models.CharField(max_length=255,choices=LOCATION_CHOICES, default='Online')
     brand = models.CharField(max_length=255)
     sku = models.IntegerField(unique=True)
+    quantity = models.IntegerField(default=0)
+    description = models.TextField(null=True, blank=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Weight (kg)")
+    dimensions = models.CharField(max_length=255, null=True, blank=True, verbose_name="Dimensions (cm)")
 
     # unique_fields = ['title']
 
     class Meta:
-        ordering = ['-created_at', 'title']
+        ordering = ['-created_at', 'quantity']
         verbose_name_plural = "Products"
 
     def __str__(self):
