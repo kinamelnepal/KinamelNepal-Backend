@@ -100,7 +100,7 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         Bulk insert products into the system.
         Accepts a list of products to insert.
         """
-        products_data = request.data.get('products', [])
+        products_data = request.data
         
         if not isinstance(products_data, list) or len(products_data) == 0:
             return Response(

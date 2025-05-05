@@ -23,6 +23,9 @@ class Product(BaseModel):
         ('Bundle', 'Bundle'),
         ('Gift Set', 'Gift Set'),
         ('Subscription', 'Subscription'),
+        ('Trending', 'Trending'),
+        ('Best Deal', 'Best Deal'),
+
     ]
     LOCATION_CHOICES = [
         ('Online', 'Online'),
