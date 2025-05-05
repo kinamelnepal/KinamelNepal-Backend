@@ -28,7 +28,7 @@ class Product(BaseModel):
         ('Online', 'Online'),
         ('Offline', 'Offline'),
     ]
-    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)  
+    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE, related_name='products', verbose_name="Product Category", null=True, blank=True)  
     sale = models.CharField(max_length=50, blank=True, null=True,choices=SALE_CHOICES,default='New')
     image = models.ImageField(upload_to='products/images/', null=True, blank=True, verbose_name="Product Image")
     image_two = models.ImageField(upload_to='products/images/', null=True, blank=True, verbose_name="Product Image 2")

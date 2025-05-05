@@ -78,6 +78,22 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at','quantity','weight']
     ordering = ['-created_at']  
 
+    @extend_schema(
+        tags=["Product"],
+        summary="Bulk Insert Products",
+        description="Insert multiple products into the system in a single request.",
+        request=ProductSerializer(many=True),
+        # responses={
+        #     201: OpenApiResponse(
+        #         description="Bulk insert successful",
+        #         content={"application/json": {"example": {"detail": "2 products successfully inserted."}}}
+        #     ),
+        #     400: OpenApiResponse(
+        #         description="Invalid input",
+        #         content={"application/json": {"example": {"detail": "Expected 'products' to be a non-empty list."}}}
+        #     ),
+        # }
+    )
     @action(detail=False, methods=['post'])
     def bulk_insert(self, request, *args, **kwargs):
         """
@@ -92,7 +108,6 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Validate the data with the serializer
         serializer = ProductSerializer(data=products_data, many=True)
         
         if serializer.is_valid():
