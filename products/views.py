@@ -83,16 +83,7 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         summary="Bulk Insert Products",
         description="Insert multiple products into the system in a single request.",
         request=ProductSerializer(many=True),
-        # responses={
-        #     201: OpenApiResponse(
-        #         description="Bulk insert successful",
-        #         content={"application/json": {"example": {"detail": "2 products successfully inserted."}}}
-        #     ),
-        #     400: OpenApiResponse(
-        #         description="Invalid input",
-        #         content={"application/json": {"example": {"detail": "Expected 'products' to be a non-empty list."}}}
-        #     ),
-        # }
+      
     )
     @action(detail=False, methods=['post'])
     def bulk_insert(self, request, *args, **kwargs):
