@@ -7,6 +7,7 @@ from core.mixins import MultiLookupMixin
 from .filters import ProductFilter
 from .serializers import ProductSerializer
 from .models import Product
+from rest_framework.decorators import action
 
 @extend_schema_view(
     list=extend_schema(
@@ -19,7 +20,7 @@ from .models import Product
                 type=str,
                 description='If set to `true`, disables pagination and returns all products.',
                 required=False,
-                enum=['true', 'false']  # Optional: You can specify allowed values
+                enum=['true', 'false']  
             )
         ]
     ),
@@ -74,6 +75,40 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
 
     search_fields = ['title', 'brand'] 
     filterset_class = ProductFilter
-    ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at']
+    ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at','quantity','weight']
     ordering = ['-created_at']  
 
+    @extend_schema(
+        tags=["Product"],
+        summary="Bulk Insert Products",
+        description="Insert multiple products into the system in a single request.",
+        request=ProductSerializer(many=True),
+      
+    )
+    @action(detail=False, methods=['post'])
+    def bulk_insert(self, request, *args, **kwargs):
+        """
+        Bulk insert products into the system.
+        Accepts a list of products to insert.
+        """
+        products_data = request.data
+        
+        if not isinstance(products_data, list) or len(products_data) == 0:
+            return Response(
+                {"detail": "Expected 'products' to be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = ProductSerializer(data=products_data, many=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"detail": f"{len(products_data)} products successfully inserted."},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )

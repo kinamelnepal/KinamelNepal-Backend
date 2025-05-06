@@ -2,11 +2,15 @@ from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiParameter
+from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from core.mixins import MultiLookupMixin
 from .filters import CategoryFilter
 from .serializers import CategorySerializer
 from .models import Category
+from django.db import IntegrityError
+from drf_spectacular.utils import extend_schema_view
+from drf_spectacular.utils import OpenApiResponse
 
 @extend_schema_view(
     list=extend_schema(
@@ -19,7 +23,7 @@ from .models import Category
                 type=str,
                 description='If set to `true`, disables pagination and returns all categories.',
                 required=False,
-                enum=['true', 'false']  # Optional: You can specify allowed values
+                enum=['true', 'false']
             )
         ]
     ),
@@ -48,6 +52,20 @@ from .models import Category
         summary="Delete a category",
         description="Remove a category from the system by its ID.",
     ),
+    bulk_create=extend_schema(
+        tags=["Category"],
+        summary="Bulk create categories",
+        description="Create multiple categories at once.",
+        request=CategorySerializer(many=True),
+        responses={
+            201: OpenApiResponse(
+                description="Categories successfully created",
+            ),
+            400: OpenApiResponse(
+                description="Bad Request, invalid data"
+            ),
+        },
+    ),
 )
 class CategoryViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -56,24 +74,51 @@ class CategoryViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     lookup_url_kwarg = 'pk'
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'bulk_create']:
             return [IsAuthenticated(), IsAdminUser()]
         else:
             return [AllowAny()]
 
     def paginate_queryset(self, queryset):
-        """
-        Override paginate_queryset to check for 'all=true' query parameter.
-        """
         all_param = self.request.query_params.get('all', None)
         if all_param == 'true':
-            # If 'all=true', return the full queryset without pagination
             return None
         return super().paginate_queryset(queryset)
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-
-    search_fields = ['name']  # Removed 'persantine' from search_fields
+    search_fields = ['name']
     filterset_class = CategoryFilter
-    ordering_fields = ['id', 'name', 'item', 'num', 'created_at', 'updated_at']  # Added 'id' to ordering_fields
+    ordering_fields = ['id', 'name', 'item', 'num', 'created_at', 'updated_at']
     ordering = ['-created_at']
+
+    @action(detail=False, methods=['post'])
+    def bulk_create(self, request):
+        """
+        Bulk create categories. Accepts a list of category data and creates all categories in one go.
+        """
+        try:
+        
+            serializer = CategorySerializer(data=request.data, many=True)
+            
+            if serializer.is_valid():
+                categories = serializer.save()
+
+                return Response(
+                    {"message": f"{len(categories)} categories created successfully."},
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    {"error": serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except IntegrityError as e:
+            return Response(
+                {"error": "Integrity error occurred: " + str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
