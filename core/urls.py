@@ -70,6 +70,7 @@ urlpatterns = [
     path('api/contact/',include('contacts.urls'),name='contact-apis'),
     path('api/faq/',include('faqs.urls'),name='faq-apis'),
     path('api/banner/',include('banners.urls'),name='banner-apis'),
+    path('api/',include('blogs.urls'),name='blog-apis'),
 ]
 
 
@@ -79,6 +80,5 @@ if not settings.DEBUG:
         re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     ]
 
-# Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

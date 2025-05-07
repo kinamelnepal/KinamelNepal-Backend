@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'contacts',
     'faqs',
     'banners',
+    'blogs',
 ]
 
 
