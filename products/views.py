@@ -75,7 +75,7 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
 
     search_fields = ['title', 'brand'] 
     filterset_class = ProductFilter
-    ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at','quantity','weight']
+    ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at','quantity','weight','title']
     ordering = ['-created_at']  
 
     @extend_schema(
