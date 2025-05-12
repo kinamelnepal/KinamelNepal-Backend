@@ -21,7 +21,7 @@ class ProductFilter(django_filters.FilterSet):
     weight_range = django_filters.RangeFilter(field_name='weight')
     sku_range = django_filters.RangeFilter(field_name='sku')
     rating_range = django_filters.RangeFilter(field_name='rating')
-
+    categories = django_filters.BaseInFilter(field_name='category', lookup_expr='in')
     class Meta:
         model = Product
         fields = ['brand', 'status', 'new_price', 'old_price', 'sale', 'sku', 'rating',  'location', 'new_price_range', 'old_price_range', 'sku_range', 'rating_range','weight_range','quantity_range','category']
