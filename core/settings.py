@@ -74,6 +74,8 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'cryptography',
+    'ckeditor',
+    # 'ckeditor_uploader',
     'users',
     'categories',
     'products',
@@ -82,7 +84,6 @@ INSTALLED_APPS = [
     'banners',
     'blogs',
 ]
-
 
 # MIDDLEWARES
 MIDDLEWARE = [
@@ -393,4 +394,17 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY')
 
-print(EXCHANGE_RATE_API_KEY,'api key')
+
+# CKEDITOR CONFIG FOR IMAGE UPLOADING
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'extraPlugins': ','.join(['image2']),
+        'removePlugins': 'image',
+    }
+}

@@ -22,5 +22,5 @@ class BlogSerializer(BaseModelSerializer):
         model = Blog
         fields = [
             'id', 'uuid', 'slug', 'category', 'title', 'image', 'date',
-            'description', 'created_at', 'updated_at','category_id'
+            'short_description', 'description', 'created_at', 'updated_at','category_id'
         ]
