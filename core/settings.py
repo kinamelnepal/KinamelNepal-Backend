@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'faqs',
     'banners',
     'blogs',
+    'carts'
 ]
 
 # MIDDLEWARES

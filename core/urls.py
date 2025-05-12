@@ -72,6 +72,7 @@ urlpatterns = [
     path('api/faq/',include('faqs.urls'),name='faq-apis'),
     path('api/banner/',include('banners.urls'),name='banner-apis'),
     path('api/',include('blogs.urls'),name='blog-apis'),
+    path('api/',include('carts.urls'),name='cart-apis'),
 ]
 
 
