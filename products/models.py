@@ -1,6 +1,6 @@
 from django.db import models
 from core.models import BaseModel
-
+from ckeditor.fields import RichTextField
 class Product(BaseModel):
     STATUS_CHOICES = [
         ('Available', 'Available'),
@@ -44,7 +44,8 @@ class Product(BaseModel):
     brand = models.CharField(max_length=255)
     sku = models.IntegerField(unique=True)
     quantity = models.IntegerField(default=0)
-    description = models.TextField(null=True, blank=True)
+    short_description = RichTextField(null=True, blank=True, verbose_name="Short Description")
+    description = RichTextField(null=True, blank=True, verbose_name="Detailed Description")
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Weight (kg)")
     dimensions = models.CharField(max_length=255, null=True, blank=True, verbose_name="Dimensions (cm)")
 

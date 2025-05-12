@@ -1,5 +1,8 @@
 from django.db import models
 from core.models import BaseModel
+from django.db import models
+from ckeditor_uploader.fields import RichTextUploadingField
+from core.models import BaseModel
 
 class Blog(BaseModel):
     category = models.ForeignKey(
@@ -25,10 +28,17 @@ class Blog(BaseModel):
         unique=True,
         verbose_name="Blog Title"
     )
-    description = models.TextField(
+    
+    short_description = RichTextUploadingField(
         null=True,
         blank=True,
         verbose_name="Short Description"
+    )
+    
+    description = RichTextUploadingField(
+        null=True,
+        blank=True,
+        verbose_name="Full Description"
     )
 
     class Meta:

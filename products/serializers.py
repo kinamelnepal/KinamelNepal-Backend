@@ -16,8 +16,8 @@ class ProductSerializer(BaseModelSerializer):
         fields = [
             'id', 'uuid', 'category', 'sale', 'image', 'image_two',
             'new_price', 'old_price', 'new_price', 'old_price', 'currency','currency_symbol',
-            'weight', 'quantity', 'description', 'dimensions',
-            'title', 'rating', 'status', 'location', 'brand', 'sku',
+            'weight', 'quantity', 'description','short_description', 'dimensions',
+            'title', 'rating', 'status', 'location', 'brand', 'sku','slug',
             'created_at', 'updated_at',
         ]
 

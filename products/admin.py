@@ -1,15 +1,31 @@
 from django.contrib import admin
+from django import forms
 from django.utils.html import format_html
+from ckeditor.widgets import CKEditorWidget
 from unfold.admin import ModelAdmin
 from .models import Product
 from core.mixins import HideBaseModelFieldsMixin, FormatBaseModelFieldsMixin
 from core.admin import SoftDeleteAdmin
 
+# Custom form for rich text support
+class ProductAdminForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = '__all__'
+        widgets = {
+            'description': CKEditorWidget(),
+            'short_description': CKEditorWidget(),
+        }
+
 @admin.register(Product)
 class ProductAdmin(HideBaseModelFieldsMixin, FormatBaseModelFieldsMixin, SoftDeleteAdmin, ModelAdmin):
-    list_display = ('id','product_image', 'title', 'category', 'new_price', 'old_price', 'status', 'brand', 'sku',  'formatted_created_at', 'is_deleted_display')
+    form = ProductAdminForm  # <-- Inject the custom form here
+    list_display = (
+        'id', 'product_image', 'title', 'category', 'new_price', 'old_price',
+        'status', 'brand', 'sku', 'formatted_created_at', 'is_deleted_display'
+    )
     search_fields = ('title', 'category__name', 'brand')
-    list_filter = ('status', 'category', 'brand', 'sale', 'location','rating', 'sku', 'new_price', 'old_price')
+    list_filter = ('status', 'category', 'brand', 'sale', 'location', 'rating', 'sku', 'new_price', 'old_price')
     ordering = ('-created_at', 'category', 'brand')
     readonly_fields = ('created_at', 'updated_at')
 
