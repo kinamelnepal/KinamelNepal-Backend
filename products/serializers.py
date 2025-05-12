@@ -5,7 +5,6 @@ from categories.serializers import CategorySerializer
 
 class ProductSerializer(BaseModelSerializer):
     category = CategorySerializer(many=False, read_only=True)
-    products_count = serializers.SerializerMethodField()
     class Meta:
         model = Product
         fields = [
