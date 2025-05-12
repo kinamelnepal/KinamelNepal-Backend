@@ -390,3 +390,7 @@ CLOUDINARY_STORAGE = {
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+
+EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY')
+
+print(EXCHANGE_RATE_API_KEY,'api key')

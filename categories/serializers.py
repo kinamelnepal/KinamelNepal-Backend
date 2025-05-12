@@ -3,7 +3,7 @@ from .models import Category
 from core.serializers import BaseModelSerializer
 
 class CategorySerializer(BaseModelSerializer):
-    products_count = serializers.SerializerMethodField()
+    products_count = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Category
         fields = [
