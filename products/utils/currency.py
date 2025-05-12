@@ -23,7 +23,7 @@ def get_exchange_rate(target_currency):
     
     if response.status_code == 200:
         data = response.json()
-        print(data,'data')
+        # print(data,'data')
         rates = data.get('conversion_rates', {})
         rate = rates.get(target_currency)
         if rate:
