@@ -1,6 +1,8 @@
 from django.db import models
 from core.models import BaseModel
 from ckeditor.fields import RichTextField
+from django.utils.text import slugify
+
 class Product(BaseModel):
     STATUS_CHOICES = [
         ('Available', 'Available'),
@@ -57,3 +59,8 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
