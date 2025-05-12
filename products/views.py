@@ -21,8 +21,18 @@ from rest_framework.decorators import action
                 description='If set to `true`, disables pagination and returns all products.',
                 required=False,
                 enum=['true', 'false']  
-            )
-        ]
+            ),
+            OpenApiParameter(
+                name='currency',
+                type=str,
+                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                required=False,
+                
+                enum= ['NPR','USD', 'EUR'],
+            ),
+
+        ],
+
     ),
     retrieve=extend_schema(
         tags=["Product"],
@@ -77,6 +87,12 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     filterset_class = ProductFilter
     ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at','quantity','weight','title']
     ordering = ['-created_at']  
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        currency = self.request.query_params.get('currency', 'NPR').upper()
+        context['currency'] = currency
+        return context
 
     @extend_schema(
         tags=["Product"],
