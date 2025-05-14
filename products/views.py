@@ -90,6 +90,7 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        print(self.request.query_params.get('currency'),'the currency')
         currency = self.request.query_params.get('currency', 'NPR').upper()
         context['currency'] = currency
         return context

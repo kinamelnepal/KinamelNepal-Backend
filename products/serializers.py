@@ -30,11 +30,13 @@ class ProductSerializer(BaseModelSerializer):
     def get_new_price(self, obj):
         currency = self.context.get('currency', 'NPR').upper()
         rate =get_exchange_rate(currency)
+        print(rate,'the rate')
         return round(float(obj.new_price) * rate, 2) if obj.new_price else None
 
     def get_old_price(self, obj):
         currency = self.context.get('currency', 'NPR').upper()
         rate = get_exchange_rate(currency)
+
         return round(float(obj.old_price) * rate, 2) if obj.old_price else None
 
     def get_currency_symbol(self,obj):

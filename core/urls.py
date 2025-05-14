@@ -73,6 +73,8 @@ urlpatterns = [
     path('api/banner/',include('banners.urls'),name='banner-apis'),
     path('api/',include('blogs.urls'),name='blog-apis'),
     path('api/',include('carts.urls'),name='cart-apis'),
+    path('api/account/',include('accounts.urls'),name='acoount-apis'),
+    path('api/',include('orders.urls'),name='order-apis'),
 ]
 
 
