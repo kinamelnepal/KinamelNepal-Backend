@@ -9,7 +9,6 @@ from users.models import User
 from rest_framework.validators import UniqueTogetherValidator
 
 
-
 class CartSerializer(BaseModelSerializer):
     items = serializers.SerializerMethodField()
     total_items = serializers.SerializerMethodField()
@@ -86,7 +85,7 @@ class CartItemSerializer(BaseModelSerializer):
         validators = [
             UniqueTogetherValidator(
                 queryset=CartItem.objects.all(),
-                fields=['cart', 'product'],
+                fields=['cart_id', 'product_id'],
                 message="This product is already in the cart."
             )
         ]
