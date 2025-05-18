@@ -56,7 +56,7 @@ class CartItem(BaseModel):
     class Meta:
         verbose_name = "Cart Item"
         verbose_name_plural = "Cart Items"
-        unique_together = ('cart', 'product') 
+        # unique_together = ('cart', 'product')
 
     def __str__(self):
         return f"{self.quantity} × {self.product.title}"
