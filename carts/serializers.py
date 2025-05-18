@@ -6,6 +6,8 @@ from products.utils.currency import get_exchange_rate, CURRENCY_TO_SYMBOL_MAPPIN
 from products.models import Product
 from users.serializers import UserSerializer
 from users.models import User
+from rest_framework.validators import UniqueTogetherValidator
+
 
 
 class CartSerializer(BaseModelSerializer):
@@ -68,7 +70,6 @@ class CartItemSerializer(BaseModelSerializer):
     subtotal = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
     currency_symbol = serializers.SerializerMethodField()
-    # cart = CartSerializer(read_only=True)
     cart_id = serializers.PrimaryKeyRelatedField(
         queryset=Cart.objects.all(),
         source='cart',
@@ -79,10 +80,15 @@ class CartItemSerializer(BaseModelSerializer):
         model = CartItem
         fields = [
             'id', 'uuid', 'product', 'product_id', 'quantity', 'subtotal',
-            # 'cart',
-            'cart_id',
-            'currency', 'currency_symbol',
+            'cart_id', 'currency', 'currency_symbol',
             'created_at', 'updated_at',
+        ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=CartItem.objects.all(),
+                fields=['cart', 'product'],
+                message="This product is already in the cart."
+            )
         ]
 
     def get_subtotal(self, obj):

@@ -266,24 +266,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # UNFOLD settings
 UNFOLD_GROUP_MODEL = 'auth.Group'
 UNFOLD ={
-    "SITE_TITLE": "9 Plus Services",
-    "SITE_HEADER": "HOS",
-    "SITE_ICON": {
-        "light": lambda request: static("core/images/icon-light.svg"),  # light mode
-        "dark": lambda request: static("core/images/icon-dark.svg"),  # dark mode
-    },
-    "SITE_LOGO": {
-        "light": lambda request: static("core/images/logo-light.svg"),  # light mode
-        "dark": lambda request: static("core/images/logo-dark.svg"),  # dark mode
-    },
-    "SITE_FAVICONS": [
-        {
-            "rel": "icon",
-            "sizes": "32x32",
-            "type": "image/svg+xml",
-            "href": lambda request: static("core/images/favicon.svg"),
-        },
-    ],
+    "SITE_TITLE": "KinamelNepal",
+    "SITE_HEADER": "KinamelNepal",
+    # "SITE_ICON": {
+    #     "light": lambda request: static("core/images/icon-light.svg"),  # light mode
+    #     "dark": lambda request: static("core/images/icon-dark.svg"),  # dark mode
+    # },
+    # "SITE_LOGO": {
+    #     "light": lambda request: static("core/images/logo-light.svg"),  # light mode
+    #     "dark": lambda request: static("core/images/logo-dark.svg"),  # dark mode
+    # },
+    # "SITE_FAVICONS": [
+    #     {
+    #         "rel": "icon",
+    #         "sizes": "32x32",
+    #         "type": "image/svg+xml",
+    #         "href": lambda request: static("core/images/favicon.svg"),
+    #     },
+    # ],
     "SHOW_HISTORY": True,
     "LOGIN": {
         "image": lambda request: static("core/images/login-bg.jpg"),
