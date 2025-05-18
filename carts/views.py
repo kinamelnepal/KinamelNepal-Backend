@@ -194,7 +194,7 @@ class CartItemViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     filterset_class = CartItemFilter
     search_fields = ['product__title','cart__user__first_name','cart__user__last_name']
     ordering_fields = ['created_at', 'updated_at', 'product__title', 'quantity']
-    ordering = ['-created_at']
+    ordering = ['product_title']
 
     def paginate_queryset(self, queryset):
         """
