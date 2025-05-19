@@ -23,7 +23,7 @@ class AddressSerializer(BaseModelSerializer):
     class Meta:
         model = Address
         fields = [
-            'id', 'uuid','user', 'user_id', 'full_name', 'email', 'phone_number',
+            'id', 'uuid','slug','user', 'user_id', 'full_name', 'email', 'phone_number',
             'address_line1', 'address_line2', 'city', 'state', 'postal_code',
             'country', 'address_type', 'is_default',
             'created_at', 'updated_at'
