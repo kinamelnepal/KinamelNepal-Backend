@@ -1,6 +1,20 @@
 import django_filters
 from .models import Product
+from django.db.models import Q
 
+class SlugOrIdInFilter(django_filters.BaseInFilter):
+    def filter(self, qs, value):
+        if not value:
+            return qs
+
+        q_objects = Q()
+        for v in value:
+            if str(v).isdigit():
+                q_objects |= Q(category__id=v)
+            else:
+                q_objects |= Q(category__slug=v)
+
+        return qs.filter(q_objects)
 class ProductFilter(django_filters.FilterSet):
     brand = django_filters.CharFilter(lookup_expr='iexact')
     status = django_filters.ChoiceFilter(choices=Product.STATUS_CHOICES)
@@ -10,7 +24,8 @@ class ProductFilter(django_filters.FilterSet):
     new_price = django_filters.NumberFilter()
     old_price = django_filters.NumberFilter()
     location = django_filters.ChoiceFilter(choices=Product.LOCATION_CHOICES)
-    category = django_filters.CharFilter(field_name='category', lookup_expr='exact')
+    # category = django_filters.CharFilter(field_name='category', lookup_expr='exact')
+    category = django_filters.CharFilter(method='filter_category')
 
     # Range filters
     new_price_range = django_filters.RangeFilter(field_name='new_price')
@@ -21,6 +36,13 @@ class ProductFilter(django_filters.FilterSet):
     rating_range = django_filters.RangeFilter(field_name='rating')
     categories = django_filters.BaseInFilter(field_name='category', lookup_expr='in')
     currency = django_filters.CharFilter(method='filter_currency')
+
+    categories = SlugOrIdInFilter()
+
+    def filter_category(self, queryset, name, value):
+        if value.isdigit():
+            return queryset.filter(category__id=value)
+        return queryset.filter(category__slug=value)
     def filter_currency(self, queryset, name, value):
         return queryset
 
@@ -31,3 +53,9 @@ class ProductFilter(django_filters.FilterSet):
             'location', 'new_price_range', 'old_price_range', 'sku_range',
             'rating_range', 'weight_range', 'quantity_range', 'category', 'currency'
         ]
+
+
+    def filter_category(self, queryset, name, value):
+        return queryset.filter(
+            Q(category__slug=value) | Q(category__id=value)
+        )
