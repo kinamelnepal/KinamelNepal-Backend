@@ -40,6 +40,15 @@ from .models import CartItem
         tags=["Cart"],
         summary="Retrieve a specific cart",
         description="Fetch detailed information about a specific cart by its ID.",
+        parameters=[
+            OpenApiParameter(
+                name='currency',
+                type=str,
+                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                required=False,
+                enum=['NPR','USD', 'EUR'],
+            ),
+        ]
     ),
     create=extend_schema(
         tags=["Cart"],
@@ -155,21 +164,57 @@ class CartViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         tags=["CartItem"],
         summary="Retrieve a specific cart item",
         description="Fetch detailed information about a specific cart item by its ID.",
+        parameters=[
+            OpenApiParameter(
+                name='currency',
+                type=str,
+                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                required=False,
+                enum=['NPR','USD', 'EUR'],
+            ),
+        ]
     ),
     create=extend_schema(
         tags=["CartItem"],
         summary="Create a new cart item",
         description="Add a new item to a cart.",
+        parameters=[
+            OpenApiParameter(
+                name='currency',
+                type=str,
+                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                required=False,
+                enum=['NPR','USD', 'EUR'],
+            ),
+        ]
     ),
     update=extend_schema(
         tags=["CartItem"],
         summary="Update a cart item",
         description="Completely update a cart item.",
+        parameters=[
+            OpenApiParameter(
+                name='currency',
+                type=str,
+                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                required=False,
+                enum=['NPR','USD', 'EUR'],
+            ),
+        ]
     ),
     partial_update=extend_schema(
         tags=["CartItem"],
         summary="Partially update a cart item",
         description="Partially update cart item details.",
+        parameters=[
+            OpenApiParameter(
+                name='currency',
+                type=str,
+                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                required=False,
+                enum=['NPR','USD', 'EUR'],
+            ),
+        ]
     ),
     destroy=extend_schema(
         tags=["CartItem"],
