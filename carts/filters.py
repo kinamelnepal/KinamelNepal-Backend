@@ -2,7 +2,7 @@ import django_filters
 from .models import Cart, CartItem
 
 class CartFilter(django_filters.FilterSet):
-    user = django_filters.CharFilter(field_name='user__username', lookup_expr='iexact')
+    user = django_filters.CharFilter(field_name='user__id', lookup_expr='iexact')
     # status = django_filters.ChoiceFilter(field_name='status', choices=Cart.STATUS_CHOICES)
     created_at = django_filters.DateFromToRangeFilter()
     updated_at = django_filters.DateFromToRangeFilter()

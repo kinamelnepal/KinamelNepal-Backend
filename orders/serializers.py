@@ -12,11 +12,18 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from products.models import Product  
 from django.utils.crypto import get_random_string
+from carts.serializers import CartSerializer
+from carts.models import Cart
+from carts.models import CartItem  
+from orders.models import OrderItem 
+from users.serializers import UserSerializer
 
 User = get_user_model()
 
 class OrderSerializer(BaseModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=True)
+    # items = serializers.SerializerMethodField()
+    user_id = serializers.PrimaryKeyRelatedField(source='user',queryset=User.objects.all(),write_only=True)
+    user = UserSerializer(read_only=True)
     shipping_address = AddressSerializer(read_only=True)
     billing_address = AddressSerializer(read_only=True)
     shipping_address_id = serializers.PrimaryKeyRelatedField(
@@ -31,17 +38,20 @@ class OrderSerializer(BaseModelSerializer):
     total = serializers.SerializerMethodField()
     shipping_cost = serializers.SerializerMethodField()
     discount = serializers.SerializerMethodField()
-
-
+    cart_id = serializers.PrimaryKeyRelatedField(
+        queryset=Cart.objects.all(), source='cart', write_only=True, required=False, allow_null=True
+    )
+    cart = CartSerializer(read_only=True, required=False)
     class Meta:
         model = Order
         fields = [
-            'id', 'uuid', 'user', 'full_name', 'email', 'phone_number', 
+            'id', 'uuid', 'user','user_id', 'full_name', 'email', 'phone_number', 
             'shipping_address', 'shipping_address_id', 'billing_address', 'billing_address_id', 
             'payment_method', 'payment_status', 'payment_id', 'paid_at', 
             'shipping_cost', 'subtotal', 'tax', 'discount', 'total', 'status', 'is_shipped', 
             'shipped_at', 'tracking_number', 'delivery_estimate', 'notes', 'created_at', 'updated_at', 
-            'currency', 'currency_symbol'
+            'currency', 'currency_symbol','cart_id', 'cart',
+            # 'items'
         ]
 
     def get_currency(self, obj):
@@ -70,6 +80,11 @@ class OrderSerializer(BaseModelSerializer):
         currency = self.context.get('currency', 'NPR').upper()
         rate = get_exchange_rate(currency)
         return round(float(obj.discount) * rate, 2) if obj.discount else None
+
+    # def get_items(self, obj):
+    #     items = obj.order_items.all()
+    #     serializer = OrderItemSerializer(items, many=True, context=self.context)
+    #     return serializer.data
 
     # Custom Validations
     def validate_total(self, value):
@@ -142,38 +157,59 @@ class OrderSerializer(BaseModelSerializer):
         return attrs
 
     # Logic for handling the order process
-
     def create(self, validated_data):
         """
-        Handle the order creation logic.
-        Set unique tracking number, update stock quantities,
-        and perform other necessary business logic.
-        """
-        # Extract and handle any additional data needed for logic
-        products_data = validated_data.get('products', [])
+        Handle the order creation from cart_id, converting cart items into order items.
+        Sets a tracking number, calculates total, updates stock, and sends confirmation.
+        """ 
+
+        # Extract the cart_id and other pricing data
+        # cart_id = validated_data.pop('cart_id', None)
+        cart = validated_data.pop('cart', None)
+        # print('cart_id:', cart_id)
+        print('cart:', cart)
         shipping_cost = validated_data.get('shipping_cost', 0)
-        subtotal = validated_data.get('subtotal', 0)
         tax = validated_data.get('tax', 0)
         discount = validated_data.get('discount', 0)
+        if not cart:
+            raise serializers.ValidationError("Cart ID is required to create an order.")
+        # Fetch the cart and related cart items
+        cart = Cart.objects.prefetch_related('items__product').filter(id=cart.id).first()
+        print(cart, 'cart')
+        if not cart:
+            raise serializers.ValidationError("Cart not found.")
 
-        # Calculate the total dynamically if not provided
+        cart_items = cart.items.all()
+        if not cart_items:
+            raise serializers.ValidationError("No items in the cart.")
+
+        # Calculate subtotal from cart
+        subtotal = sum(item.subtotal() for item in cart_items)
         total = subtotal + shipping_cost + tax - discount
 
-        # Generate a unique tracking number
-        tracking_number = self.generate_unique_tracking_number()
-        validated_data['tracking_number'] = tracking_number
+        # Add calculated fields to validated_data
+        validated_data['subtotal'] = subtotal
+        validated_data['total'] = total
+        validated_data['tracking_number'] = self.generate_unique_tracking_number()
+        validated_data['cart'] = cart
 
-        # Handle order creation
+        # Create the order
         order = super().create(validated_data)
-        order.total = total
-        order.save()
 
-        # Reduce stock based on ordered products
-        self.update_product_stock(products_data)
+        for item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.new_price,
+                discount=0,
+            )
 
-        # Post-processing
+            item.product.quantity -= item.quantity
+            item.product.save()
+
+        cart.items.update(is_deleted=True)
         self.send_order_confirmation_email(order)
-
         return order
 
     def generate_unique_tracking_number(self):
@@ -240,7 +276,7 @@ class OrderItemSerializer(BaseModelSerializer):
         source = 'product',
         write_only=True
     )
-    product = ProductSerializer(read_only=True)  # Serialize product details
+    product = ProductSerializer(read_only=True)  
     total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:

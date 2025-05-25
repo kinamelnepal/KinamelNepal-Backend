@@ -31,9 +31,9 @@ class Order(BaseModel):
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
-    full_name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
+    full_name = models.CharField(max_length=255,null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
 
     shipping_address = models.ForeignKey('accounts.Address', on_delete=models.SET_NULL, null=True, related_name='shipping_orders')
     billing_address = models.ForeignKey('accounts.Address', on_delete=models.SET_NULL, null=True, blank=True, related_name='billing_orders')
@@ -44,10 +44,10 @@ class Order(BaseModel):
     paid_at = models.DateTimeField(blank=True, null=True)
 
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     is_shipped = models.BooleanField(default=False)
@@ -56,6 +56,8 @@ class Order(BaseModel):
     delivery_estimate = models.DateTimeField(blank=True, null=True)
     
     notes = models.TextField(blank=True, null=True)
+
+    cart = models.ForeignKey('carts.Cart', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
 
     class Meta:
         ordering = ['-created_at']
