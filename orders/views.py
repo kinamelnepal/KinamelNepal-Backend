@@ -171,6 +171,7 @@ class OrderViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         description="Remove an order item from the system by its ID.",
     ),
 )
+
 class OrderItemViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
@@ -178,7 +179,6 @@ class OrderItemViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     filterset_class = OrderItemFilter
     ordering_fields = ['total', 'quantity', 'price']
     ordering = ['-total']
-
 
 
     def get_permissions(self):
