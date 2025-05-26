@@ -49,7 +49,7 @@ class OrderSerializer(BaseModelSerializer):
             'id', 'uuid', 'user','user_id', 'full_name', 'email', 'phone_number', 
             'shipping_address', 'shipping_address_id', 'billing_address', 'billing_address_id', 
             'payment_method', 'payment_status', 'payment_id', 'paid_at', 
-            'shipping_cost', 'subtotal', 'tax', 'discount', 'total', 'status', 'is_shipped', 
+            'shipping_cost', 'subtotal', 'tax', 'discount', 'total', 'order_status', 'is_shipped', 
             'shipped_at', 'tracking_number', 'delivery_estimate', 'notes', 'created_at', 'updated_at', 
             'currency', 'currency_symbol','cart_id', 'cart',
             # 'items'
@@ -248,7 +248,7 @@ class OrderSerializer(BaseModelSerializer):
         Handle order updates, including updating stock and other order attributes.
         """
         # Before updating, handle stock if necessary (e.g., when a status change affects stock)
-        if validated_data.get('status') == 'Cancelled' and instance.status != 'Cancelled':
+        if validated_data.get('order_status') == 'Cancelled' and instance.order_status != 'Cancelled':
             self.restore_stock(instance)
 
         # Perform regular update

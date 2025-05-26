@@ -65,7 +65,7 @@ class OrderViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = OrderFilter
     search_fields = ['full_name', 'email', 'phone_number']
-    ordering_fields = ['total', 'status', 'created_at']
+    ordering_fields = ['total', 'order_status', 'created_at']
     ordering = ['-created_at']
 
     def get_permissions(self):

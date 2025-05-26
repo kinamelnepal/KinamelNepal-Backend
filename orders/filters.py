@@ -2,7 +2,7 @@ import django_filters
 from .models import Order, OrderItem
 
 class OrderFilter(django_filters.FilterSet):
-    status = django_filters.ChoiceFilter(choices=Order.STATUS_CHOICES)
+    order_status = django_filters.ChoiceFilter(choices=Order.STATUS_CHOICES)
     payment_method = django_filters.ChoiceFilter(choices=Order.PAYMENT_METHOD_CHOICES)
     payment_status = django_filters.ChoiceFilter(choices=Order.PAYMENT_STATUS_CHOICES)
 
@@ -19,7 +19,7 @@ class OrderFilter(django_filters.FilterSet):
     class Meta:
         model = Order
         fields = [
-            'status', 'payment_method', 'payment_status', 
+            'order_status', 'payment_method', 'payment_status', 
             'total_range', 'shipping_cost_range', 'tax_range', 
             'discount_range', 'shipping_address', 'billing_address'
         ]
