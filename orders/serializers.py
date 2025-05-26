@@ -163,20 +163,13 @@ class OrderSerializer(BaseModelSerializer):
         Handle the order creation from cart_id, converting cart items into order items.
         Sets a tracking number, calculates total, updates stock, and sends confirmation.
         """ 
-
-        # Extract the cart_id and other pricing data
-        # cart_id = validated_data.pop('cart_id', None)
         cart = validated_data.pop('cart', None)
-        # print('cart_id:', cart_id)
-        print('cart:', cart)
         shipping_cost = validated_data.get('shipping_cost', 0)
         tax = validated_data.get('tax', 0)
         discount = validated_data.get('discount', 0)
         if not cart:
             raise serializers.ValidationError("Cart ID is required to create an order.")
-        # Fetch the cart and related cart items
         cart = Cart.objects.prefetch_related('items__product').filter(id=cart.id).first()
-        print(cart, 'cart')
         if not cart:
             raise serializers.ValidationError("Cart not found.")
 
@@ -209,7 +202,7 @@ class OrderSerializer(BaseModelSerializer):
             item.product.quantity -= item.quantity
             item.product.save()
 
-        cart.items.update(is_deleted=True)
+        # cart.items.update(is_deleted=True)
         self.send_order_confirmation_email(order)
         return order
 
@@ -228,7 +221,7 @@ class OrderSerializer(BaseModelSerializer):
         Reduce product stock when an order is placed.
         """
         for product_data in products_data:
-            product = Product.objects.get(id=product_data['product_id'])  # assuming 'product_id' is provided in the data
+            product = Product.objects.get(id=product_data['product_id'])
             if product.quantity >= product_data['quantity']:
                 product.quantity -= product_data['quantity']
                 product.save()
@@ -258,9 +251,9 @@ class OrderSerializer(BaseModelSerializer):
         """
         Restore stock if an order is cancelled.
         """
-        for product_data in order.products.all():  # Assuming `order.products` is a related field to products
-            product = product_data.product
-            product.quantity += product_data.quantity
+        for order_item in order.order_items.all():
+            product = order_item.product
+            product.quantity += order_item.quantity
             product.save()
 
 
