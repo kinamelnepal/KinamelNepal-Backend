@@ -17,12 +17,12 @@ class OrderAdminForm(forms.ModelForm):
 class OrderAdmin(HideBaseModelFieldsMixin, FormatBaseModelFieldsMixin, SoftDeleteAdmin, ModelAdmin):
     form = OrderAdminForm  # Custom form for the Order model
     list_display = (
-        'id', 'full_name', 'email', 'phone_number', 'status', 'payment_status', 
+        'id', 'full_name', 'email', 'phone_number', 'order_status', 'payment_status', 
         'payment_method', 'total', 'formatted_created_at', 'formatted_updated_at', 'is_deleted_display'
     )
-    search_fields = ('full_name', 'email', 'phone_number', 'status', 'payment_method')
-    list_filter = ('status', 'payment_method', 'payment_status', 'shipping_address', 'billing_address')
-    ordering = ('-created_at', 'status')
+    search_fields = ('full_name', 'email', 'phone_number', 'order_status', 'payment_method')
+    list_filter = ('order_status', 'payment_method', 'payment_status', 'shipping_address', 'billing_address')
+    ordering = ('-created_at', 'order_status')
     readonly_fields = ('created_at', 'updated_at')
 
     def formatted_created_at(self, obj):
@@ -59,7 +59,7 @@ class OrderItemAdmin(HideBaseModelFieldsMixin, FormatBaseModelFieldsMixin, SoftD
         'formatted_created_at', 'formatted_updated_at', 'total_display', 'product_image'
     )
     search_fields = ('order__id', 'product__title', 'quantity')
-    list_filter = ('order', 'product', 'status')
+    list_filter = ('order', 'product', 'quantity', 'price', 'discount')
     ordering = ('-created_at', 'product__title')
     readonly_fields = ('created_at', 'updated_at')
 
