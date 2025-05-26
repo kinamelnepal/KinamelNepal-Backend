@@ -41,6 +41,7 @@ class OrderSerializer(BaseModelSerializer):
     cart_id = serializers.PrimaryKeyRelatedField(
         queryset=Cart.objects.all(), source='cart', write_only=True, required=False, allow_null=True
     )
+    
     cart = CartSerializer(read_only=True, required=False)
     class Meta:
         model = Order
