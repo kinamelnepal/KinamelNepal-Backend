@@ -46,7 +46,7 @@ class OrderSerializer(BaseModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'uuid', 'user','user_id', 'full_name', 'email', 'phone_number', 
+            'id', 'uuid','slug', 'user','user_id', 'full_name', 'email', 'phone_number', 
             'shipping_address', 'shipping_address_id', 'billing_address', 'billing_address_id', 
             'payment_method', 'payment_status', 'payment_id', 'paid_at', 
             'shipping_cost', 'subtotal', 'tax', 'discount', 'total', 'order_status', 'is_shipped', 
