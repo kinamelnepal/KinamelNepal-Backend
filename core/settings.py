@@ -85,7 +85,10 @@ INSTALLED_APPS = [
     'blogs',
     'carts',
     'accounts',
-    'orders'
+    'orders',
+    'terms_and_conditions',
+    'privacy_policy',
+    'return_policy',
 ]
 
 # MIDDLEWARES
