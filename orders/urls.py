@@ -8,5 +8,5 @@ router.register(r'order', OrderViewSet, basename='order')
 router.register(r'order-item', OrderItemViewSet, basename='order-item')
 
 urlpatterns = [
-    path('', include(router.urls)),  # Include the router URLs
+    path('', include(router.urls)),  
 ]

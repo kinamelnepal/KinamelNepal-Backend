@@ -76,8 +76,8 @@ urlpatterns = [
     path('api/account/',include('accounts.urls'),name='acoount-apis'),
     path('api/terms-and-conditions/',include('terms_and_conditions.urls'),name='terms-and-conditions-apis'),
     path('api/',include('orders.urls'),name='order-apis'),
-    path('api/privacy-policy',include('privacy_policy.urls'),name='privacy-policy-apis'),
-    path('api/return-policy',include('return_policy.urls'),name='return-policy-apis'),
+    path('api/privacy-policy/',include('privacy_policy.urls'),name='privacy-policy-apis'),
+    path('api/return-policy/',include('return_policy.urls'),name='return-policy-apis'),
 ]
 
 
