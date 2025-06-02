@@ -4,29 +4,29 @@
     <meta charset="UTF-8" />
     <style>
       body {
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        background-color: #f5f7fa;
-        padding: 40px 20px;
-        color: #333333;
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        color: #343a40;
+        padding: 40px;
       }
 
       .container {
         max-width: 600px;
         margin: auto;
-        background: #ffffff;
-        padding: 30px 40px;
+        background-color: #ffffff;
+        padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
 
       .header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
       }
 
       .header h1 {
         color: #5caf90;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
 
       .content {
@@ -36,49 +36,43 @@
 
       .btn {
         display: inline-block;
-        margin-top: 25px;
+        margin-top: 20px;
         padding: 12px 24px;
         background-color: #5caf90;
         color: white;
         text-decoration: none;
         border-radius: 6px;
-        font-weight: bold;
       }
 
       .footer {
-        margin-top: 40px;
+        margin-top: 30px;
         font-size: 13px;
         color: #6c757d;
         text-align: center;
-      }
-
-      .small {
-        font-size: 12px;
-        color: #888888;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>Email Verification</h1>
-        <p>Please confirm your email address</p>
+        <h1>Email Verified</h1>
+        <p>Welcome to our platform!</p>
       </div>
 
       <div class="content">
         <p>Dear {{ full_name }},</p>
 
         <p>
-          Thank you for registering. To complete your registration and activate
-          your account, please verify your email address by clicking the button
-          below:
+          Your email address has been successfully verified. You can now log in
+          to your account and start using all the features of our platform.
         </p>
 
-        <p style="text-align: center">
-          <a href="{{ verify_link }}" class="btn">Verify Email</a>
+        <p>
+          If you did not perform this action, please contact our support team
+          immediately.
         </p>
 
-        <p>If you did not create an account, please ignore this message.</p>
+        <a href="{{ login_link }}" class="btn">Log In</a>
       </div>
 
       <div class="footer">

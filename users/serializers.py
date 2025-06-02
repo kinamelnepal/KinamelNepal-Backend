@@ -68,8 +68,8 @@ class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
     def validate_email(self, value):
         print(value, 'value in validate email')
-        if not (User.objects.filter(email=value, role="admin").exists() or  User.objects.filter(email=value, is_superuser=True).exists()):
-            raise serializers.ValidationError("Admin user with this email does not exist.")
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist.")
         return value
 
 class ResetPasswordSerializer(serializers.Serializer):
@@ -85,3 +85,7 @@ class ResetPasswordSerializer(serializers.Serializer):
         except ValidationError as e:
             raise serializers.ValidationError({"new_password": e.messages})
         return data
+    
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.UUIDField()
