@@ -12,7 +12,15 @@ from core.mixins import MultiLookupMixin
 from .filters import UserFilter
 from django.contrib.auth.hashers import check_password, make_password
 from .models import User
-from .serializers import UserSerializer, ChangePasswordSerializer,UserRegisterSerializer
+from .serializers import UserSerializer, ChangePasswordSerializer,UserRegisterSerializer,ForgotPasswordSerializer, ResetPasswordSerializer
+import os
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.contrib.auth.password_validation import validate_password
+from django.shortcuts import get_object_or_404
+from .models import User, PasswordResetToken
+from datetime import timedelta
 
 @extend_schema_view(
     list=extend_schema(
@@ -61,7 +69,7 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     lookup_url_kwarg = 'pk' 
 
     def get_permissions(self):
-        if self.action in ['register', 'login','create']:
+        if self.action in ['register', 'login','create','forgot_password','reset_password']:
             return [AllowAny()]
         
         elif self.action in ['logout','profile','update_profile','change_password']:
@@ -291,3 +299,89 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         # Format errors to return only a single message per field
         formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
         return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    @extend_schema(
+        request=ForgotPasswordSerializer,
+        responses={200: OpenApiResponse(description="Password reset link sent successfully.")},
+        tags=["Users"]
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny], url_path="forgot-password")
+    def forgot_password(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        print(serializer,'the serializer')
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+
+        user = User.objects.get(email=email, is_superuser=True)
+        expires_at = timezone.now() + timedelta(hours=1)
+        token = PasswordResetToken.objects.create(user=user, expires_at=expires_at)
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        reset_link = f"{frontend_url}reset-password/{token.token}"
+
+        html_content = render_to_string('emails/password_reset_email.html', {
+            'full_name': f"{user.first_name} {user.last_name}",
+            'reset_link': reset_link,
+            'expires_in_hours': 1,
+        })
+
+        email_msg = EmailMultiAlternatives(
+            subject="Password Reset",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        email_msg.attach_alternative(html_content, "text/html")
+
+        try:
+            email_msg.send(fail_silently=False)
+        except Exception as e:
+            return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': 'Password reset link sent successfully.'}, status=status.HTTP_200_OK)
+
+
+
+    @extend_schema(
+        request=ResetPasswordSerializer,
+        responses={200: OpenApiResponse(description="Password has been reset successfully.")},
+        tags=["Users"]
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny], url_path="reset-password")
+    def reset_password(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_uuid = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+
+        reset_token = get_object_or_404(PasswordResetToken, token=token_uuid)
+        if reset_token.is_expired():
+            return Response({"error": "Token has expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = reset_token.user
+        user.set_password(new_password)
+        user.save()
+
+        PasswordResetToken.objects.filter(user=user).update(is_deleted=True)
+
+        login_link = f"{os.environ.get('FRONTEND_URL', 'http://localhost:8000')}/login"
+        html_content = render_to_string('emails/password_reset_successful.html', {
+            'full_name': f"{user.first_name} {user.last_name}",
+            'login_link': login_link,
+        })
+
+        success_email = EmailMultiAlternatives(
+            subject="Password Reset Successful",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        success_email.attach_alternative(html_content, "text/html")
+        try:
+            success_email.send(fail_silently=False)
+        except Exception as e:
+            pass 
+
+        return Response({"message": "Password has been reset successfully."})
