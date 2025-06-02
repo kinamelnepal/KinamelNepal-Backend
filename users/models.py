@@ -8,6 +8,27 @@ from core.managers import BaseModelManager
 from django.core.validators import RegexValidator
 import uuid
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
+
+class EmailVerificationToken(models.Model):
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return self.created_at + timezone.timedelta(hours=24) < timezone.now()
+
+class PasswordResetToken(BaseModel):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+
+
 class UserManager(BaseUserManager, BaseModelManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -60,6 +81,7 @@ class User(AbstractBaseUser, BaseModel):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     groups = models.ManyToManyField('auth.Group', related_name='users', blank=True) 
     objects = UserManager()
+    email_verified = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     unique_fields = ['email']
 

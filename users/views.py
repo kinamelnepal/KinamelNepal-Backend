@@ -12,8 +12,18 @@ from core.mixins import MultiLookupMixin
 from .filters import UserFilter
 from django.contrib.auth.hashers import check_password, make_password
 from .models import User
-from .serializers import UserSerializer, ChangePasswordSerializer,UserRegisterSerializer
-
+from .serializers import UserSerializer, ChangePasswordSerializer,UserRegisterSerializer,ForgotPasswordSerializer, ResetPasswordSerializer
+import os
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.contrib.auth.password_validation import validate_password
+from django.shortcuts import get_object_or_404
+from .models import User, PasswordResetToken
+from datetime import timedelta
+from .serializers import VerifyEmailSerializer
+from .models import EmailVerificationToken
+import uuid
 @extend_schema_view(
     list=extend_schema(
         tags=["Users"],
@@ -61,7 +71,7 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     lookup_url_kwarg = 'pk' 
 
     def get_permissions(self):
-        if self.action in ['register', 'login','create']:
+        if self.action in ['register', 'login','create','forgot_password','reset_password','verify_email']:
             return [AllowAny()]
         
         elif self.action in ['logout','profile','update_profile','change_password']:
@@ -79,7 +89,6 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         """
         all_param = self.request.query_params.get('all', None)
         if all_param == 'true':
-            # If 'all=true', return the full queryset without pagination
             return None
         return super().paginate_queryset(queryset)
 
@@ -122,15 +131,37 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
             )
         }
     )
+    
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
-        """Custom endpoint for user registration."""
+        """Custom endpoint for user registration and email verification."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        user.is_active = False
+        user.save()
+        token = EmailVerificationToken.objects.create(user=user)
+        verify_link = f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/verify-email?token={token.token}"
+        html_content = render_to_string("emails/verify_email.html", {
+            "full_name": f"{user.first_name} {user.last_name}",
+            "verify_link": verify_link,
+        })
+
+        verification_email = EmailMultiAlternatives(
+            subject="Verify Your Email Address",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        verification_email.attach_alternative(html_content, "text/html")
+        try:
+            verification_email.send(fail_silently=False)
+        except Exception:
+            pass  
+
         refresh = RefreshToken.for_user(user)
         return Response({
-            'message': 'User registered successfully!',
+            'message': 'User registered successfully! Please check your email to verify your account.',
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'data': serializer.data
@@ -291,3 +322,135 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         # Format errors to return only a single message per field
         formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
         return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    @extend_schema(
+        request=ForgotPasswordSerializer,
+        responses={200: OpenApiResponse(description="Password reset link sent successfully.")},
+        tags=["Users"]
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny], url_path="forgot-password")
+    def forgot_password(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        print(serializer,'the serializer')
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        user = User.objects.get(email=email)
+        expires_at = timezone.now() + timedelta(hours=1)
+        token = PasswordResetToken.objects.create(user=user, expires_at=expires_at)
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        reset_link = f"{frontend_url}/reset-password/{token.token}"
+
+        html_content = render_to_string('emails/password_reset_email.html', {
+            'full_name': f"{user.first_name} {user.last_name}",
+            'reset_link': reset_link,
+            'expires_in_hours': 1,
+        })
+
+        email_msg = EmailMultiAlternatives(
+            subject="Password Reset",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        email_msg.attach_alternative(html_content, "text/html")
+
+        try:
+            email_msg.send(fail_silently=False)
+        except Exception as e:
+            return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': 'Password reset link sent successfully.'}, status=status.HTTP_200_OK)
+
+
+
+    @extend_schema(
+        request=ResetPasswordSerializer,
+        responses={200: OpenApiResponse(description="Password has been reset successfully.")},
+        tags=["Users"]
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny], url_path="reset-password")
+    def reset_password(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_uuid = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+
+        reset_token = get_object_or_404(PasswordResetToken, token=token_uuid)
+        if reset_token.is_expired():
+            return Response({"error": "Token has expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = reset_token.user
+        user.set_password(new_password)
+        user.save()
+
+        PasswordResetToken.objects.filter(user=user).update(is_deleted=True)
+
+        login_link = f"{os.environ.get('FRONTEND_URL', 'http://localhost:8000')}/login"
+        html_content = render_to_string('emails/password_reset_successful.html', {
+            'full_name': f"{user.first_name} {user.last_name}",
+            'login_link': login_link,
+        })
+
+        success_email = EmailMultiAlternatives(
+            subject="Password Reset Successful",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        success_email.attach_alternative(html_content, "text/html")
+        try:
+            success_email.send(fail_silently=False)
+        except Exception as e:
+            pass 
+
+        return Response({"message": "Password has been reset successfully."})
+
+
+
+ 
+
+    @extend_schema(
+        request=VerifyEmailSerializer,
+        responses={200: OpenApiResponse(description="Email has been verified successfully.")},
+        tags=["Users"]
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny], url_path="verify-email")
+    def verify_email(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_uuid = serializer.validated_data["token"]
+
+        token = get_object_or_404(EmailVerificationToken, token=token_uuid)
+
+        if token.is_expired():
+            return Response({"error": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = token.user
+        user.is_active = True
+        user.email_verified = True  
+        user.save()
+
+        EmailVerificationToken.objects.filter(user=user).update(is_deleted=True)
+
+        html_content = render_to_string("emails/email_verified_successful.html", {
+            "full_name": f"{user.first_name} {user.last_name}",
+            "login_link": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/login",
+        })
+
+        success_email = EmailMultiAlternatives(
+            subject="Email Verified Successfully",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        success_email.attach_alternative(html_content, "text/html")
+        try:
+            success_email.send(fail_silently=False)
+        except Exception:
+            pass 
+
+        return Response({"message": "Email has been verified successfully."}, status=status.HTTP_200_OK)
