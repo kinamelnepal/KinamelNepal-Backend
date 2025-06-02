@@ -51,8 +51,7 @@ class OrderSerializer(BaseModelSerializer):
             'payment_method', 'payment_status', 'payment_id', 'paid_at', 
             'shipping_cost', 'subtotal', 'tax', 'discount', 'total', 'order_status', 'is_shipped', 
             'shipped_at', 'tracking_number', 'delivery_estimate', 'notes', 'created_at', 'updated_at', 
-            'currency', 'currency_symbol','cart_id', 'cart',
-            # 'items'
+            'currency', 'currency_symbol','cart_id', 'cart',"is_completed",
         ]
 
     def get_currency(self, obj):
@@ -241,6 +240,10 @@ class OrderSerializer(BaseModelSerializer):
         Handle order updates, including updating stock and other order attributes.
         """
         # Before updating, handle stock if necessary (e.g., when a status change affects stock)
+
+        if validated_data.get('order_status') == 'Delivered' and instance.order_status != 'Delivered':
+            instance.is_completed = True
+
         if validated_data.get('order_status') == 'Cancelled' and instance.order_status != 'Cancelled':
             self.restore_stock(instance)
 
