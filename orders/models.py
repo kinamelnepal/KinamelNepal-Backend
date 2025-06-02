@@ -60,12 +60,18 @@ class Order(BaseModel):
     notes = models.TextField(blank=True, null=True)
     cart = models.ForeignKey('carts.Cart', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     ordered_at = models.DateTimeField(auto_now_add=True, editable=False, null=True, blank=True)
+    is_completed = models.BooleanField(default=False)
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = "Orders"
 
     def __str__(self):
         return f"Order #{self.id} - {self.full_name}"
+    
+    def save(self, *args, **kwargs):
+        if self.order_status == "Delivered":
+            self.is_completed = True
+        return super().save(*args, **kwargs)
 
 
 class OrderItem(BaseModel):

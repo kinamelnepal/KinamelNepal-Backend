@@ -17,7 +17,7 @@ class OrderAdminForm(forms.ModelForm):
 class OrderAdmin(HideBaseModelFieldsMixin, FormatBaseModelFieldsMixin, SoftDeleteAdmin, ModelAdmin):
     form = OrderAdminForm  # Custom form for the Order model
     list_display = (
-        'id', 'full_name', 'email', 'phone_number', 'order_status', 'payment_status', 
+        'id', 'full_name', 'email', 'phone_number', 'order_status', 'payment_status', "is_completed",
         'payment_method', 'total', 'formatted_created_at', 'formatted_updated_at', 'is_deleted_display'
     )
     search_fields = ('full_name', 'email', 'phone_number', 'order_status', 'payment_method')

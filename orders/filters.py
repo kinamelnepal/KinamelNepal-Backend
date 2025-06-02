@@ -16,13 +16,14 @@ class OrderFilter(django_filters.FilterSet):
     shipping_address = django_filters.NumberFilter(field_name='shipping_address__id')
     billing_address = django_filters.NumberFilter(field_name='billing_address__id')
     user_id = django_filters.NumberFilter(field_name='user__id')
+    is_completed = django_filters.BooleanFilter(field_name='is_completed')
     class Meta:
         model = Order
         fields = [
             'order_status', 'payment_method', 'payment_status', 
             'total_range', 'shipping_cost_range', 'tax_range', 
             'discount_range', 'shipping_address', 'billing_address',
-            'user_id'
+            'user_id','is_completed'
         ]
 
 class OrderItemFilter(django_filters.FilterSet):
@@ -43,5 +44,5 @@ class OrderItemFilter(django_filters.FilterSet):
         model = OrderItem
         fields = [
             'order', 'product', 'quantity', 'price', 'discount', 'total', 
-            'total_range', 'quantity_range', 'price_range', 'discount_range'
+            'total_range', 'quantity_range', 'price_range', 'discount_range',
         ]
