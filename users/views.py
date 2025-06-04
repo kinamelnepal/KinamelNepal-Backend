@@ -217,10 +217,18 @@ class UserViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         email = request.data.get('email')
         password = request.data.get('password')
         user = authenticate(request, email=email, password=password)
+
         if not user:
             return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
-        refresh = RefreshToken.for_user(user)
         
+        # if not user.is_active:
+        #     return Response({'error': 'This account is currently not active'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+        if not user.email_verified:
+            return Response({'error': 'Please verify your email address before logging in.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
+        refresh = RefreshToken.for_user(user)
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
