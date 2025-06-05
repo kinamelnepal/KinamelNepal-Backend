@@ -17,6 +17,8 @@ from carts.models import Cart
 from carts.models import CartItem  
 from orders.models import OrderItem 
 from users.serializers import UserSerializer
+from payments.serializers import PaymentSerializer
+from rest_framework.reverse import reverse
 
 User = get_user_model()
 
@@ -81,12 +83,6 @@ class OrderSerializer(BaseModelSerializer):
         rate = get_exchange_rate(currency)
         return round(float(obj.discount) * rate, 2) if obj.discount else None
 
-    # def get_items(self, obj):
-    #     items = obj.order_items.all()
-    #     serializer = OrderItemSerializer(items, many=True, context=self.context)
-    #     return serializer.data
-
-    # Custom Validations
     def validate_total(self, value):
         """
         Ensure that the 'total' is the sum of the subtotal, shipping cost, tax, and discount.
@@ -156,18 +152,65 @@ class OrderSerializer(BaseModelSerializer):
             raise serializers.ValidationError("Billing address is required for this payment method.")
         return attrs
 
-    # Logic for handling the order process
+    # # Logic for handling the order process
+    # def create(self, validated_data):
+    #     """
+    #     Handle the order creation from cart_id, converting cart items into order items.
+    #     Sets a tracking number, calculates total, updates stock, and sends confirmation.
+    #     """ 
+    #     cart = validated_data.pop('cart', None)
+    #     shipping_cost = validated_data.get('shipping_cost', 0)
+    #     tax = validated_data.get('tax', 0)
+    #     discount = validated_data.get('discount', 0)
+    #     if not cart:
+    #         raise serializers.ValidationError("Cart ID is required to create an order.")
+    #     cart = Cart.objects.prefetch_related('items__product').filter(id=cart.id).first()
+    #     if not cart:
+    #         raise serializers.ValidationError("Cart not found.")
+
+    #     cart_items = cart.items.all()
+    #     if not cart_items:
+    #         raise serializers.ValidationError("No items in the cart.")
+
+    #     # Calculate subtotal from cart
+    #     subtotal = sum(item.subtotal() for item in cart_items)
+    #     total = subtotal + shipping_cost + tax - discount
+
+    #     # Add calculated fields to validated_data
+    #     validated_data['subtotal'] = subtotal
+    #     validated_data['total'] = total
+    #     validated_data['tracking_number'] = self.generate_unique_tracking_number()
+    #     validated_data['cart'] = cart
+
+    #     # Create the order
+    #     order = super().create(validated_data)
+
+    #     for item in cart_items:
+    #         OrderItem.objects.create(
+    #             order=order,
+    #             product=item.product,
+    #             quantity=item.quantity,
+    #             price=item.product.new_price,
+    #             discount=0,
+    #         )
+
+    #         item.product.quantity -= item.quantity
+    #         item.product.save()
+
+    #     # cart.items.update(is_deleted=True)
+    #     self.send_order_confirmation_email(order)
+    #     return order
+
     def create(self, validated_data):
-        """
-        Handle the order creation from cart_id, converting cart items into order items.
-        Sets a tracking number, calculates total, updates stock, and sends confirmation.
-        """ 
+        request = self.context.get("request")
         cart = validated_data.pop('cart', None)
         shipping_cost = validated_data.get('shipping_cost', 0)
         tax = validated_data.get('tax', 0)
         discount = validated_data.get('discount', 0)
+
         if not cart:
             raise serializers.ValidationError("Cart ID is required to create an order.")
+
         cart = Cart.objects.prefetch_related('items__product').filter(id=cart.id).first()
         if not cart:
             raise serializers.ValidationError("Cart not found.")
@@ -176,17 +219,13 @@ class OrderSerializer(BaseModelSerializer):
         if not cart_items:
             raise serializers.ValidationError("No items in the cart.")
 
-        # Calculate subtotal from cart
         subtotal = sum(item.subtotal() for item in cart_items)
         total = subtotal + shipping_cost + tax - discount
 
-        # Add calculated fields to validated_data
         validated_data['subtotal'] = subtotal
         validated_data['total'] = total
         validated_data['tracking_number'] = self.generate_unique_tracking_number()
         validated_data['cart'] = cart
-
-        # Create the order
         order = super().create(validated_data)
 
         for item in cart_items:
@@ -197,14 +236,49 @@ class OrderSerializer(BaseModelSerializer):
                 price=item.product.new_price,
                 discount=0,
             )
-
             item.product.quantity -= item.quantity
             item.product.save()
 
-        # cart.items.update(is_deleted=True)
         self.send_order_confirmation_email(order)
+
+        payment_method = request.data.get("payment_method", "COD")
+        payment_data = {
+            "order_id": order.id,
+            "method": payment_method,
+            "amount": subtotal,
+            "tax_amount": tax,
+            "total_amount": total,
+        }
+
+        payment_serializer = PaymentSerializer(data=payment_data, context={'request': request})
+        payment_serializer.is_valid(raise_exception=True)
+        payment = payment_serializer.save()
+        redirect_url = None
+        if payment.method == 'Esewa' and request:
+            redirect_url = request.build_absolute_uri(
+                reverse('payment-initiate-esewa', kwargs={'pk': payment.pk})
+            )
+        self._redirect_url = redirect_url
         return order
 
+    def get_payment(self, obj):
+        if hasattr(obj, 'payment'):
+            return {
+                "id": obj.payment.id,
+                "method": obj.payment.method,
+                "payment_status": obj.payment.payment_status,
+                "amount": obj.payment.amount,
+            }
+        return None
+
+    def get_redirect_url(self, obj):
+        request = self.context.get('request')
+        if hasattr(obj, 'payment') and obj.payment.method == 'esewa':
+            return request.build_absolute_uri(
+                f'/api/payments/{obj.payment.id}/initiate-esewa/'
+            ) if request else f'/api/payments/{obj.payment.id}/initiate-esewa/'
+        return None
+    
     def generate_unique_tracking_number(self):
         """
         Generate a unique tracking number using a mix of uppercase letters and digits.

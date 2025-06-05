@@ -21,8 +21,7 @@ class Order(BaseModel):
     
     PAYMENT_METHOD_CHOICES = [
         ('COD', 'Cash On Delivery'),
-        ('Stripe', 'Stripe'),
-        ('PayPal', 'PayPal'),
+        ('Card', 'Card'),
         ('Esewa', 'Esewa'),
     ]
     
