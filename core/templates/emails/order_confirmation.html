@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f6f9fc;
+        padding: 20px;
+        color: #333;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 30px;
+        max-width: 600px;
+        margin: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      h2 {
+        color: #2d3748;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        background-color: #f1f5f9;
+      }
+      .total {
+        font-weight: bold;
+        color: #2b6cb0;
+      }
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 14px;
+        color: #718096;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Hi {{ full_name }},</h2>
+      <p>Thank you for your order! Here’s a summary of what you purchased:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order_items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.price }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td colspan="2" class="total">Total</td>
+            <td class="total">${{ total_amount }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>We will notify you once your order is shipped.</p>
+      <p>Best regards,<br /><strong>Your Company Name</strong></p>
+
+      <div class="footer">
+        © {{ current_year }} KinamelNepal. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>

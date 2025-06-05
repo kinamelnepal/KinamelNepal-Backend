@@ -126,20 +126,7 @@ class OrderViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-
         headers = self.get_success_headers(serializer.data)
-        order = serializer.instance
-        payment = getattr(order, 'payment', None)
-
-        if payment and payment.method == 'Esewa':
-            esewa_response = initiate_esewa_payment(payment)
-            esewa_url = build_esewa_payment_url(payment) 
-            return Response(
-                {"order": serializer.data, "Esewa": esewa_response,"redirect_url": esewa_url},
-                status=status.HTTP_201_CREATED,
-                headers=headers,
-            )
-
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 @extend_schema_view(
