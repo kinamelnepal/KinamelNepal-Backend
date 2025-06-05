@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'terms_and_conditions',
     'privacy_policy',
     'return_policy',
+    'payments',
 ]
 
 # MIDDLEWARES
@@ -211,16 +212,24 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'HOST': os.environ.get('DB_HOST'),
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'), 
-            'PASSWORD': os.environ.get('DB_PASS'),
-        }
-}
 
+
+
+if os.environ.get('DATABASE_URL') is None:
+    DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'HOST': os.environ.get('DB_HOST'),
+                'NAME': os.environ.get('DB_NAME'),
+                'USER': os.environ.get('DB_USER'), 
+                'PASSWORD': os.environ.get('DB_PASS'),
+            }
+        }
+else:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

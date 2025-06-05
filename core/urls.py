@@ -1,11 +1,3 @@
-# from django.urls import path
-# from .views import CountryListView, GeoLocationView  
-
-# urlpatterns = [
-#     path('countries/', CountryListView.as_view(), name='country-list'),  
-#     path('get-lat-lng/', GeoLocationView.as_view(), name='geolocation-view'), 
-# ]
-
 
 from django.contrib import admin
 from django.urls import path, re_path, include
@@ -73,7 +65,8 @@ urlpatterns = [
     path('api/banner/',include('banners.urls'),name='banner-apis'),
     path('api/',include('blogs.urls'),name='blog-apis'),
     path('api/',include('carts.urls'),name='cart-apis'),
-    path('api/account/',include('accounts.urls'),name='acoount-apis'),
+    path('api/account/',include('accounts.urls'),name='account-apis'),
+    path('api/payment/',include('payments.urls'),name='payment-apis'),
     path('api/terms-and-conditions/',include('terms_and_conditions.urls'),name='terms-and-conditions-apis'),
     path('api/',include('orders.urls'),name='order-apis'),
     path('api/privacy-policy/',include('privacy_policy.urls'),name='privacy-policy-apis'),
