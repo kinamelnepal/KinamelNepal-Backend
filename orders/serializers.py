@@ -18,12 +18,14 @@ from carts.models import CartItem
 from orders.models import OrderItem 
 from users.serializers import UserSerializer
 from payments.serializers import PaymentSerializer
-from rest_framework.reverse import reverse
-
+from django.utils import timezone
+from django.utils import timezone
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+import os
 User = get_user_model()
 
 class OrderSerializer(BaseModelSerializer):
-    # items = serializers.SerializerMethodField()
     user_id = serializers.PrimaryKeyRelatedField(source='user',queryset=User.objects.all(),write_only=True)
     user = UserSerializer(read_only=True)
     shipping_address = AddressSerializer(read_only=True)
@@ -43,14 +45,14 @@ class OrderSerializer(BaseModelSerializer):
     cart_id = serializers.PrimaryKeyRelatedField(
         queryset=Cart.objects.all(), source='cart', write_only=True, required=False, allow_null=True
     )
-    
+
     cart = CartSerializer(read_only=True, required=False)
     class Meta:
         model = Order
         fields = [
             'id', 'uuid','slug', 'user','user_id', 'full_name', 'email', 'phone_number', 
             'shipping_address', 'shipping_address_id', 'billing_address', 'billing_address_id', 
-            'payment_method', 'payment_status', 'payment_id', 'paid_at', 
+            'payment_method', 'payment_status', 'paid_at', 
             'shipping_cost', 'subtotal', 'tax', 'discount', 'total', 'order_status', 'is_shipped', 
             'shipped_at', 'tracking_number', 'delivery_estimate', 'notes', 'created_at', 'updated_at', 
             'currency', 'currency_symbol','cart_id', 'cart',"is_completed",
@@ -147,59 +149,9 @@ class OrderSerializer(BaseModelSerializer):
         """
         Additional custom validation logic if needed.
         """
-        # Validate if billing address is provided if payment method requires it
         if attrs.get('payment_method') in ['Stripe', 'PayPal', 'Esewa'] and not attrs.get('billing_address'):
             raise serializers.ValidationError("Billing address is required for this payment method.")
         return attrs
-
-    # # Logic for handling the order process
-    # def create(self, validated_data):
-    #     """
-    #     Handle the order creation from cart_id, converting cart items into order items.
-    #     Sets a tracking number, calculates total, updates stock, and sends confirmation.
-    #     """ 
-    #     cart = validated_data.pop('cart', None)
-    #     shipping_cost = validated_data.get('shipping_cost', 0)
-    #     tax = validated_data.get('tax', 0)
-    #     discount = validated_data.get('discount', 0)
-    #     if not cart:
-    #         raise serializers.ValidationError("Cart ID is required to create an order.")
-    #     cart = Cart.objects.prefetch_related('items__product').filter(id=cart.id).first()
-    #     if not cart:
-    #         raise serializers.ValidationError("Cart not found.")
-
-    #     cart_items = cart.items.all()
-    #     if not cart_items:
-    #         raise serializers.ValidationError("No items in the cart.")
-
-    #     # Calculate subtotal from cart
-    #     subtotal = sum(item.subtotal() for item in cart_items)
-    #     total = subtotal + shipping_cost + tax - discount
-
-    #     # Add calculated fields to validated_data
-    #     validated_data['subtotal'] = subtotal
-    #     validated_data['total'] = total
-    #     validated_data['tracking_number'] = self.generate_unique_tracking_number()
-    #     validated_data['cart'] = cart
-
-    #     # Create the order
-    #     order = super().create(validated_data)
-
-    #     for item in cart_items:
-    #         OrderItem.objects.create(
-    #             order=order,
-    #             product=item.product,
-    #             quantity=item.quantity,
-    #             price=item.product.new_price,
-    #             discount=0,
-    #         )
-
-    #         item.product.quantity -= item.quantity
-    #         item.product.save()
-
-    #     # cart.items.update(is_deleted=True)
-    #     self.send_order_confirmation_email(order)
-    #     return order
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -218,7 +170,9 @@ class OrderSerializer(BaseModelSerializer):
         cart_items = cart.items.all()
         if not cart_items:
             raise serializers.ValidationError("No items in the cart.")
-
+        
+        if validated_data.get('payment_staus')=="Paid":
+            validated_data["paid_at"] = timezone.now()
         subtotal = sum(item.subtotal() for item in cart_items)
         total = subtotal + shipping_cost + tax - discount
 
@@ -252,32 +206,10 @@ class OrderSerializer(BaseModelSerializer):
 
         payment_serializer = PaymentSerializer(data=payment_data, context={'request': request})
         payment_serializer.is_valid(raise_exception=True)
-        payment = payment_serializer.save()
-        redirect_url = None
-        if payment.method == 'Esewa' and request:
-            redirect_url = request.build_absolute_uri(
-                reverse('payment-initiate-esewa', kwargs={'pk': payment.pk})
-            )
-        self._redirect_url = redirect_url
+        payment_serializer.save()
+        
         return order
-
-    def get_payment(self, obj):
-        if hasattr(obj, 'payment'):
-            return {
-                "id": obj.payment.id,
-                "method": obj.payment.method,
-                "payment_status": obj.payment.payment_status,
-                "amount": obj.payment.amount,
-            }
-        return None
-
-    def get_redirect_url(self, obj):
-        request = self.context.get('request')
-        if hasattr(obj, 'payment') and obj.payment.method == 'esewa':
-            return request.build_absolute_uri(
-                f'/api/payments/{obj.payment.id}/initiate-esewa/'
-            ) if request else f'/api/payments/{obj.payment.id}/initiate-esewa/'
-        return None
+    
     
     def generate_unique_tracking_number(self):
         """
@@ -302,22 +234,47 @@ class OrderSerializer(BaseModelSerializer):
                 raise ValidationError(f"Not enough stock for {product.title}.")
 
     def send_order_confirmation_email(self, order):
-        """
-        Send an order confirmation email after the order is created.
-        """
-        # Code to send the email goes here
-        # This could be an email to the customer, admin, or both.
-        pass
+        user = order.user
+        order_items = order.order_items.all()  
+
+        html_content = render_to_string('emails/order_confirmation.html', {
+            'full_name': f"{user.first_name} {user.last_name}",
+            'order_items': [
+                {
+                    'name': item.product.title,
+                    'quantity': item.quantity,
+                    'price': f"{item.total:.2f}"
+                } for item in order_items
+            ],
+            'total_amount': f"{order.total:.2f}",
+            'current_year': timezone.now().year
+        })
+
+        email_msg = EmailMultiAlternatives(
+            subject="Order Confirmation",
+            body="",
+            from_email=os.environ.get('EMAIL_HOST_USER'),
+            to=[user.email]
+        )
+        email_msg.attach_alternative(html_content, "text/html")
+
+        try:
+            email_msg.send(fail_silently=False)
+        except Exception as e:
+            print(f"Error occurred in sending email: {e}")
 
     def update(self, instance, validated_data):
         """
         Handle order updates, including updating stock and other order attributes.
         """
-        # Before updating, handle stock if necessary (e.g., when a status change affects stock)
 
-        if validated_data.get('order_status') == 'Delivered' and instance.order_status != 'Delivered':
+        if validated_data.get('order_status') == 'Delivered' :
             instance.is_completed = True
-
+            instance.is_shipped = True
+            instance.shipped_at = timezone.now()
+        
+        if validated_data.get('payment_staus')=="Paid":
+            instance.paid_at = timezone.now()
         if validated_data.get('order_status') == 'Cancelled' and instance.order_status != 'Cancelled':
             self.restore_stock(instance)
 
@@ -373,24 +330,15 @@ class OrderItemSerializer(BaseModelSerializer):
         return value
 
     def validate_discount(self, value):
-        """
-        Ensures that the discount is not greater than the price.
-        """
         if value > self.initial_data.get('price', 0):
             raise serializers.ValidationError("Discount cannot be greater than the price.")
         return value
 
     def create(self, validated_data):
-        """
-        Override create method to calculate the total of the OrderItem.
-        """
         validated_data['total'] = (validated_data['price'] * validated_data['quantity']) - validated_data['discount']
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        """
-        Override update method to recalculate total whenever the data is updated.
-        """
         instance.quantity = validated_data.get('quantity', instance.quantity)
         instance.price = validated_data.get('price', instance.price)
         instance.discount = validated_data.get('discount', instance.discount)

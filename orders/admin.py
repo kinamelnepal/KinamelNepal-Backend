@@ -15,7 +15,7 @@ class OrderAdminForm(forms.ModelForm):
 
 @admin.register(Order)
 class OrderAdmin(HideBaseModelFieldsMixin, FormatBaseModelFieldsMixin, SoftDeleteAdmin, ModelAdmin):
-    form = OrderAdminForm  # Custom form for the Order model
+    form = OrderAdminForm  
     list_display = (
         'id', 'full_name', 'email', 'phone_number', 'order_status', 'payment_status', "is_completed",
         'payment_method', 'total', 'formatted_created_at', 'formatted_updated_at', 'is_deleted_display'

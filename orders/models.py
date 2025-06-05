@@ -42,7 +42,6 @@ class Order(BaseModel):
 
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default='COD')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='Pending')
-    payment_id = models.CharField(max_length=255, blank=True, null=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
