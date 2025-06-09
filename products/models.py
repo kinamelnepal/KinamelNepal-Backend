@@ -64,3 +64,4 @@ class Product(BaseModel):
         if not self.slug and self.title:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
