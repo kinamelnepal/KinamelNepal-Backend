@@ -26,6 +26,7 @@ class Banner(BaseModel):
         ('category_page__sidebar', 'Category Page Sidebar'),
         ('category_page__footer', 'Category Page Footer'),
         ('popup__main', 'Popup Main'),
+        ('offers','Offers')
     ]
 
     title = models.CharField(max_length=255, unique=True)
