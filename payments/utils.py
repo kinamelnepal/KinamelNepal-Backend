@@ -1,5 +1,6 @@
-
 from urllib.parse import urlencode
+
+
 # utils/esewa.py
 def initiate_esewa_payment(payment):
     payload = {
@@ -19,7 +20,7 @@ def initiate_esewa_payment(payment):
 def build_esewa_payment_url(payment):
     # base_url = "https://uat.esewa.com.np/epay/main"
     base_url = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"
-    
+
     params = {
         "tAmt": payment.amount,
         "amt": payment.amount,

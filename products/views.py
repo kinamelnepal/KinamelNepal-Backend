@@ -1,13 +1,16 @@
-from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiParameter
-from core.mixins import MultiLookupMixin
-from .filters import ProductFilter
-from .serializers import ProductSerializer
-from .models import Product
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+
+from core.mixins import MultiLookupMixin
+
+from .filters import ProductFilter
+from .models import Product
+from .serializers import ProductSerializer
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -16,23 +19,20 @@ from rest_framework.decorators import action
         description="Fetch all products available in the system.",
         parameters=[
             OpenApiParameter(
-                name='all',
+                name="all",
                 type=str,
-                description='If set to `true`, disables pagination and returns all products.',
+                description="If set to `true`, disables pagination and returns all products.",
                 required=False,
-                enum=['true', 'false']  
+                enum=["true", "false"],
             ),
             OpenApiParameter(
-                name='currency',
+                name="currency",
                 type=str,
-                description='Convert price fields to this currency (USD, EUR, NPR). Default is USD.',
+                description="Convert price fields to this currency (USD, EUR, NPR). Default is USD.",
                 required=False,
-                
-                enum= ['NPR','USD', 'EUR'],
+                enum=["NPR", "USD", "EUR"],
             ),
-
         ],
-
     ),
     retrieve=extend_schema(
         tags=["Product"],
@@ -63,11 +63,11 @@ from rest_framework.decorators import action
 class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAuthenticated(), IsAdminUser()]
         else:
             return [AllowAny()]
@@ -76,23 +76,38 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         """
         Override paginate_queryset to check for 'all=true' query parameter.
         """
-        all_param = self.request.query_params.get('all', None)
-        if all_param == 'true':
+        all_param = self.request.query_params.get("all", None)
+        if all_param == "true":
             return None
         return super().paginate_queryset(queryset)
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
 
-    search_fields = ['title', 'brand'] 
+    search_fields = ["title", "brand"]
     filterset_class = ProductFilter
-    ordering_fields = ['id', 'new_price', 'old_price', 'rating', 'sku', 'created_at', 'updated_at','quantity','weight','title']
-    ordering = ['-created_at']  
-    
+    ordering_fields = [
+        "id",
+        "new_price",
+        "old_price",
+        "rating",
+        "sku",
+        "created_at",
+        "updated_at",
+        "quantity",
+        "weight",
+        "title",
+    ]
+    ordering = ["-created_at"]
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        print(self.request.query_params.get('currency'),'the currency')
-        currency = self.request.query_params.get('currency', 'NPR').upper()
-        context['currency'] = currency
+        print(self.request.query_params.get("currency"), "the currency")
+        currency = self.request.query_params.get("currency", "NPR").upper()
+        context["currency"] = currency
         return context
 
     @extend_schema(
@@ -100,32 +115,28 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         summary="Bulk Insert Products",
         description="Insert multiple products into the system in a single request.",
         request=ProductSerializer(many=True),
-      
     )
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def bulk_insert(self, request, *args, **kwargs):
         """
         Bulk insert products into the system.
         Accepts a list of products to insert.
         """
         products_data = request.data
-        
+
         if not isinstance(products_data, list) or len(products_data) == 0:
             return Response(
                 {"detail": "Expected 'products' to be a non-empty list."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         serializer = ProductSerializer(data=products_data, many=True)
-        
+
         if serializer.is_valid():
             serializer.save()
             return Response(
                 {"detail": f"{len(products_data)} products successfully inserted."},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
         else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

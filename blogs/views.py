@@ -1,13 +1,16 @@
-from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiParameter
-from core.mixins import MultiLookupMixin
-from .filters import BlogFilter
-from .serializers import BlogSerializer, BlogCategorySerializer
-from .models import Blog, BlogCategory
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+
+from core.mixins import MultiLookupMixin
+
+from .filters import BlogFilter
+from .models import Blog, BlogCategory
+from .serializers import BlogCategorySerializer, BlogSerializer
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -44,20 +47,24 @@ from rest_framework.decorators import action
 class BlogViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAuthenticated(), IsAdminUser()]
         else:
             return [AllowAny()]
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['title', 'category__name']
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    search_fields = ["title", "category__name"]
     filterset_class = BlogFilter
-    ordering_fields = ['id', 'date', 'created_at', 'updated_at']
-    ordering = ['-created_at']
+    ordering_fields = ["id", "date", "created_at", "updated_at"]
+    ordering = ["-created_at"]
 
     @extend_schema(
         tags=["Blog"],
@@ -65,7 +72,7 @@ class BlogViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         description="Insert multiple blogs into the system in a single request.",
         request=BlogSerializer(many=True),
     )
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def bulk_insert(self, request, *args, **kwargs):
         """
         Bulk insert blogs into the system.
@@ -76,7 +83,7 @@ class BlogViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         if not isinstance(blogs_data, list) or len(blogs_data) == 0:
             return Response(
                 {"detail": "Expected 'blogs' to be a non-empty list."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = BlogSerializer(data=blogs_data, many=True)
@@ -85,13 +92,10 @@ class BlogViewSet(MultiLookupMixin, viewsets.ModelViewSet):
             serializer.save()
             return Response(
                 {"detail": f"{len(blogs_data)} blogs successfully inserted."},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
         else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema_view(
@@ -129,16 +133,20 @@ class BlogViewSet(MultiLookupMixin, viewsets.ModelViewSet):
 class BlogCategoryViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = BlogCategory.objects.all()
     serializer_class = BlogCategorySerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsAuthenticated(), IsAdminUser()]
         else:
             return [AllowAny()]
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name']
-    ordering_fields = ['id', 'created_at', 'updated_at']
-    ordering = ['-created_at']
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    search_fields = ["name"]
+    ordering_fields = ["id", "created_at", "updated_at"]
+    ordering = ["-created_at"]

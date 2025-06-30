@@ -1,13 +1,15 @@
+import secrets
 import uuid
-from django.db import models
-from django.utils.text import slugify
-from django.utils import timezone
+
 from django.contrib.auth.models import AnonymousUser
+from django.db import models
+from django.db.models.deletion import CASCADE, SET_NULL
+from django.utils import timezone
+from django.utils.text import slugify
+
 from .managers import BaseModelManager
 from .utils import get_current_user
-from django.db.models.deletion import CASCADE, SET_NULL
-from django.apps import apps
-from django.db.models.deletion import CASCADE, SET_NULL, DO_NOTHING, PROTECT
+
 
 class BaseModel(models.Model):
     objects = BaseModelManager()
@@ -19,27 +21,43 @@ class BaseModel(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     created_by = models.ForeignKey(
-        'users.User', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="%(class)s_created", editable=False
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created",
+        editable=False,
     )
     updated_by = models.ForeignKey(
-        'users.User', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="%(class)s_updated", editable=False
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_updated",
+        editable=False,
     )
     deleted_by = models.ForeignKey(
-        'users.User', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="%(class)s_deleted", editable=False
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_deleted",
+        editable=False,
     )
 
     status = models.CharField(
         max_length=20,
-        choices=[('active', 'Active'), ('inactive', 'Inactive'), ('archived', 'Archived')],
-        default='active'
+        choices=[
+            ("active", "Active"),
+            ("inactive", "Inactive"),
+            ("archived", "Archived"),
+        ],
+        default="active",
     )
     remarks = models.TextField(blank=True, null=True)
     version = models.PositiveIntegerField(default=1)
     metadata = models.JSONField(blank=True, null=True)
-    unique_fields = ['slug', 'uuid']
+    unique_fields = ["slug", "uuid"]
 
     class Meta:
         abstract = True
@@ -72,7 +90,7 @@ class BaseModel(models.Model):
             related_qs = model._default_manager.filter(**filter_kwargs)
 
             for related_obj in related_qs:
-                if not hasattr(related_obj, 'is_deleted') or related_obj.is_deleted:
+                if not hasattr(related_obj, "is_deleted") or related_obj.is_deleted:
                     continue
 
                 if on_delete_behavior == CASCADE:
@@ -87,7 +105,7 @@ class BaseModel(models.Model):
         self.is_deleted = True
         self.deleted_by = user
         self.deleted_at = timezone.now()
-        self.status = 'inactive'
+        self.status = "inactive"
         self.save()
         self.cascade_or_nullify()
 
@@ -96,7 +114,7 @@ class BaseModel(models.Model):
         self.is_deleted = False
         self.deleted_at = None
         self.deleted_by = None
-        self.status = 'active'
+        self.status = "active"
         self.save()
 
     def delete(self, *args, **kwargs):
@@ -108,10 +126,25 @@ class BaseModel(models.Model):
         self.is_deleted = True
         self.deleted_by = user
         self.deleted_at = timezone.now()
-        self.status = 'inactive'
+        self.status = "inactive"
         self.save()
         self.cascade_or_nullify()
 
     def hard_delete(self):
         """Permanently delete the object from the database."""
         super().delete()
+
+
+class APIKey(models.Model):
+    name = models.CharField(max_length=100)
+    key = models.CharField(max_length=64, unique=True, editable=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = secrets.token_urlsafe(48)[:64]
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} - {'Active' if self.is_active else 'Inactive'}"

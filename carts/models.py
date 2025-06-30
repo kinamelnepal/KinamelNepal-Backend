@@ -1,5 +1,6 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 from core.models import BaseModel
 from products.models import Product
 
@@ -11,13 +12,10 @@ class Cart(BaseModel):
         null=True,
         blank=True,
         related_name="carts",
-        verbose_name="User"
+        verbose_name="User",
     )
     session_key = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        verbose_name="Session Key"
+        max_length=100, null=True, blank=True, verbose_name="Session Key"
     )
 
     class Meta:
@@ -36,22 +34,16 @@ class Cart(BaseModel):
 
 class CartItem(BaseModel):
     cart = models.ForeignKey(
-        Cart,
-        on_delete=models.CASCADE,
-        related_name="items",
-        verbose_name="Cart"
+        Cart, on_delete=models.CASCADE, related_name="items", verbose_name="Cart"
     )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         related_name="cart_items",
-        verbose_name="Product"
+        verbose_name="Product",
     )
 
-    quantity = models.PositiveIntegerField(
-        default=1,
-        verbose_name="Quantity"
-    )
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
 
     class Meta:
         verbose_name = "Cart Item"

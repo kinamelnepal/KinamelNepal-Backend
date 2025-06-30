@@ -1,11 +1,14 @@
-from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework import filters, viewsets
 from rest_framework.permissions import AllowAny, IsAdminUser
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+
 from core.mixins import MultiLookupMixin
+
 from .filters import PrivacyPolicyFilter
-from .serializers import PrivacyPolicySerializer
 from .models import PrivacyPolicy
+from .serializers import PrivacyPolicySerializer
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -14,13 +17,13 @@ from .models import PrivacyPolicy
         description="Fetch all privacy Policy.",
         parameters=[
             OpenApiParameter(
-                name='all',
+                name="all",
                 type=str,
-                description='If set to `true`, disables pagination and returns all Privacy Policy.',
+                description="If set to `true`, disables pagination and returns all Privacy Policy.",
                 required=False,
-                enum=['true', 'false']
+                enum=["true", "false"],
             )
-        ]
+        ],
     ),
     retrieve=extend_schema(
         tags=["Privacy Policy"],
@@ -51,22 +54,26 @@ from .models import PrivacyPolicy
 class PrivacyPolicyViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = PrivacyPolicy.objects.all()
     serializer_class = PrivacyPolicySerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             return [AllowAny()]
         return [IsAdminUser()]
 
     def paginate_queryset(self, queryset):
-        all_param = self.request.query_params.get('all', None)
-        if all_param == 'true':
+        all_param = self.request.query_params.get("all", None)
+        if all_param == "true":
             return None
         return super().paginate_queryset(queryset)
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
     filterset_class = PrivacyPolicyFilter
-    search_fields = ['title']
-    ordering_fields = ['created_at', 'updated_at']
-    ordering = ['-created_at']
+    search_fields = ["title"]
+    ordering_fields = ["created_at", "updated_at"]
+    ordering = ["-created_at"]

@@ -1,0 +1,5 @@
+[flake8]
+# E203 and W503 are ignored to be compatible with Black
+max-line-length = 500
+exclude = migrations, __pycache__, manage.py, .venv, hos_venv
+extend-ignore = E203, W503
