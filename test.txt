@@ -1,0 +1,39 @@
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="all",
+                type=str,
+                description="If set to `true`, disables pagination and returns all payments.",
+                required=False,
+                enum=["true", "false"],
+            ),
+            OpenApiParameter(
+                name="method",
+                type=str,
+                description="Filter payments by payment method.",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="payment_status",
+                type=str,
+                description="Filter payments by payment status.",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="paid_at_before",
+                type=str,
+                description="Filter payments made before this datetime (YYYY-MM-DDTHH:MM:SS).",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="paid_at_after",
+                type=str,
+                description="Filter payments made after this datetime (YYYY-MM-DDTHH:MM:SS).",
+                required=False,
+            ),
+        ],
+        tags=["Payment"],
+        summary="Retrieve a list of payments",
+        description="Fetch all payments available in the system.",
+    ))
