@@ -1,25 +1,32 @@
 from django.db import models
+
 from core.models import BaseModel
 
 
 class Payment(BaseModel):
     PAYMENT_METHOD_CHOICES = [
-        ('COD', 'Cash On Delivery'),
-        ('Card', 'Card'),
-        ('Esewa', 'Esewa'),
+        ("COD", "Cash On Delivery"),
+        ("Card", "Card"),
+        ("Esewa", "Esewa"),
     ]
 
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('failed', 'Failed'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+        ("cancelled", "Cancelled"),
+        ("refunded", "Refunded"),
     ]
 
-    order = models.OneToOneField('orders.Order' , on_delete=models.CASCADE, related_name='payment')
-    method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cod')
-    payment_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    order = models.OneToOneField(
+        "orders.Order", on_delete=models.CASCADE, related_name="payment"
+    )
+    method = models.CharField(
+        max_length=20, choices=PAYMENT_METHOD_CHOICES, default="cod"
+    )
+    payment_status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="pending"
+    )
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -41,7 +48,7 @@ class Payment(BaseModel):
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name_plural = "Payments"
 
     def __str__(self):

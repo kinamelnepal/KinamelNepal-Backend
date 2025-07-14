@@ -1,4 +1,5 @@
 from django.db import models
+
 from core.models import BaseModel
 
 
@@ -7,7 +8,7 @@ class Faq(BaseModel):
     answer = models.TextField()
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name_plural = "FAQs"
 
     def __str__(self):

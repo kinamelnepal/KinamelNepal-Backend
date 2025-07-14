@@ -1,4 +1,5 @@
 from django.db import models
+
 from core.models import BaseModel
 
 
@@ -9,7 +10,7 @@ class Contact(BaseModel):
     message = models.TextField()
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name_plural = "Contact Messages"
 
     def __str__(self):

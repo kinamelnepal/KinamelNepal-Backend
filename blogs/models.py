@@ -1,44 +1,34 @@
-from django.db import models
-from core.models import BaseModel
-from django.db import models
 from ckeditor_uploader.fields import RichTextUploadingField
+from django.db import models
+
 from core.models import BaseModel
+
 
 class Blog(BaseModel):
     category = models.ForeignKey(
-        'blogs.BlogCategory',
+        "blogs.BlogCategory",
         on_delete=models.CASCADE,
-        related_name='blogs',
+        related_name="blogs",
         verbose_name="Blog Category",
         null=True,
-        blank=True
+        blank=True,
     )
     image = models.ImageField(
-        upload_to='blogs/images/',
+        upload_to="blogs/images/",
         max_length=255,
         null=True,
         blank=True,
-        verbose_name="Blog Image"
+        verbose_name="Blog Image",
     )
-    date = models.DateField(
-        verbose_name="Published Date"
-    )
-    title = models.CharField(
-        max_length=255,
-        unique=True,
-        verbose_name="Blog Title"
-    )
-    
+    date = models.DateField(verbose_name="Published Date")
+    title = models.CharField(max_length=255, unique=True, verbose_name="Blog Title")
+
     short_description = RichTextUploadingField(
-        null=True,
-        blank=True,
-        verbose_name="Short Description"
+        null=True, blank=True, verbose_name="Short Description"
     )
-    
+
     description = RichTextUploadingField(
-        null=True,
-        blank=True,
-        verbose_name="Full Description"
+        null=True, blank=True, verbose_name="Full Description"
     )
 
     class Meta:
@@ -49,22 +39,17 @@ class Blog(BaseModel):
 
 
 class BlogCategory(BaseModel):
-    name = models.CharField(
-        max_length=100,
-        unique=True,
-        verbose_name="Category Name"
-    )
+    name = models.CharField(max_length=100, unique=True, verbose_name="Category Name")
     description = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Category Description"
+        null=True, blank=True, verbose_name="Category Description"
     )
     image = models.ImageField(
-        upload_to='blogs/categories/',
+        upload_to="blogs/categories/",
         null=True,
         blank=True,
-        verbose_name="Category Image"
+        verbose_name="Category Image",
     )
+
     class Meta:
         verbose_name_plural = "Blog Categories"
 

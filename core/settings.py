@@ -10,16 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
 import os
-from django.templatetags.static import static
-import os
-from django.utils.translation import gettext_lazy as _
 from datetime import timedelta
+from pathlib import Path
 
-print(os.environ.get('CLOUDINARY_CLOUD_NAME'))
-print(os.environ.get('CLOUDINARY_API_KEY'))
-print(os.environ.get('CLOUDINARY_API_SECRET'))
+from django.templatetags.static import static
+
+print(os.environ.get("CLOUDINARY_CLOUD_NAME"))
+print(os.environ.get("CLOUDINARY_API_KEY"))
+print(os.environ.get("CLOUDINARY_API_SECRET"))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,20 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
+DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # CORS_ALLOWED_ORIGINS = os.environ.get('ALLOWED_HOSTS').split(',')
 # ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
-ALLOWED_HOSTS = [
-    'localhost',   
-    '*',
-    'localhost:3000',
-    'http://localhost:3000'
-]
-CORS_ORIGIN_ALLOW_ALL = True  
+ALLOWED_HOSTS = ["localhost", "*", "localhost:3000", "http://localhost:3000"]
+CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
@@ -48,204 +42,216 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 INSTALLED_APPS = [
-    "unfold",  
-    "unfold.contrib.filters",  
-    "unfold.contrib.forms",  
-    "unfold.contrib.inlines",  
-    "unfold.contrib.import_export",  
-    "unfold.contrib.guardian",  
-    "unfold.contrib.simple_history",  
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'daphne',
-    'django.contrib.staticfiles',
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.inlines",
+    "unfold.contrib.import_export",
+    "unfold.contrib.guardian",
+    "unfold.contrib.simple_history",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "daphne",
+    "django.contrib.staticfiles",
     "corsheaders",
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
-    'drf_spectacular',
-    'guardian',
-    'django_filters',
-    'django_countries',
-    'bootstrap4',
-    'cloudinary',
-    'cloudinary_storage',
-    'cryptography',
-    'ckeditor',
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
+    "guardian",
+    "django_filters",
+    "django_countries",
+    "bootstrap4",
+    "cloudinary",
+    "cloudinary_storage",
+    "cryptography",
+    "ckeditor",
     # 'ckeditor_uploader',
-    'users',
-    'categories',
-    'products',
-    'contacts',
-    'faqs',
-    'banners',
-    'blogs',
-    'carts',
-    'accounts',
-    'orders',
-    'terms_and_conditions',
-    'privacy_policy',
-    'return_policy',
-    'payments',
+    "core",
+    "users",
+    "categories",
+    "products",
+    "contacts",
+    "faqs",
+    "banners",
+    "blogs",
+    "carts",
+    "accounts",
+    "orders",
+    "terms_and_conditions",
+    "privacy_policy",
+    "return_policy",
+    "payments",
 ]
 
 # MIDDLEWARES
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.APIKeyMiddleware",
 ]
 
 # ROOT URLCONF
-ROOT_URLCONF = 'core.urls'
+ROOT_URLCONF = "core.urls"
 
 
 # TEMPLATES SETTINGS
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates',BASE_DIR / 'core' / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates", BASE_DIR / "core" / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
-TEMPLATE_LOADERS = (
-'django.template.loaders.eggs.Loader',
-)
+TEMPLATE_LOADERS = ("django.template.loaders.eggs.Loader",)
 
 
 # WSGI APPLICATION
-WSGI_APPLICATION = 'core.wsgi.application'
+WSGI_APPLICATION = "core.wsgi.application"
 
 
 # Allow embedding Django pages in iframes
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # REST FRAMEWORK SETTINGS
-REST_FRAMEWORK ={
-    'DEFAULT_SCHEMA_CLASS':'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "core.authentication.APIKeyAuthentication",
     ),
-    'DEFAULT_PAGINATION_CLASS': 'core.pagination.CustomPageNumberPagination',
-    'PAGE_SIZE': 10,
+    "DEFAULT_PAGINATION_CLASS": "core.pagination.CustomPageNumberPagination",
+    "PAGE_SIZE": 10,
 }
-
 
 
 # AUTHENTICATION BACKENDS
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend', # this is default
-    'guardian.backends.ObjectPermissionBackend',
+    "django.contrib.auth.backends.ModelBackend",  # this is default
+    "guardian.backends.ObjectPermissionBackend",
 )
 
 # SIMPLE JWT SETTINGS
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=2),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    "AUTH_HEADER_TYPES": ("Bearer",),
     "USER_ID_FIELD": "id",
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-    'BLACKLIST_AFTER_ROTATION': True,
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
-# DRF SPECTACULAR SETTINGS
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'HOS API',
-    'DESCRIPTION': 'API documentation For HOS',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': True,
-    'COMPONENT_SPLIT_REQUEST': True,
-    'PREPROCESSING_HOOKS': [],
-    # 'SCHEMA_PATH_PREFIX_TRIM': '/api/v1',
-    "EXTENSIONS_INFO": {
-        "x-websocket": [
-            {
-                "name": "Cleaning Updates WebSocket",
-                "url": "ws://127.0.0.1:8000/ws/cleaning_updates/",
-                "description": "WebSocket endpoint for real-time cleaning updates."
-            }
-        ]
+    "TITLE": "Kinamel Nepal API",
+    "DESCRIPTION": "API documentation For KinamelNepal",
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+    },
+    "VERSION": "3.0.0",
+    "SERVE_INCLUDE_SCHEMA": True,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SECURITY": [
+        {"ApiKeyAuth": []},
+        {"BearerAuth": []},
+    ],
+    "SECURITY_SCHEMES": {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": 'JWT Authorization using the Bearer scheme. Example: "Bearer <token>"',
+        },
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-KEY",
+            "description": "Custom API key authentication via X-API-KEY header.",
+        },
     },
 }
 
 # AUTH USER MODEL
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 # CACHE AND RATE LIMITING SETTINGS
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
-    'cache-for-ratelimiting': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    "cache-for-ratelimiting": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
 }
-RATELIMIT_USE_CACHE = 'cache-for-ratelimiting'
-RATELIMIT_IP_META_KEY = lambda r: r.request.META.get('HTTP_X_CLIENT_IP', r.request.META.get('REMOTE_ADDR'))
-RATELIMIT_EXCEPTION_CLASS = 'django_ratelimit.exceptions.Ratelimited'
+RATELIMIT_USE_CACHE = "cache-for-ratelimiting"
 
+
+def ratelimit_ip_meta_key(r):
+    return r.request.META.get("HTTP_X_CLIENT_IP", r.request.META.get("REMOTE_ADDR"))
+
+
+RATELIMIT_IP_META_KEY = ratelimit_ip_meta_key
+RATELIMIT_EXCEPTION_CLASS = "django_ratelimit.exceptions.Ratelimited"
 
 
 # EMAIL SETTINGS
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-
-if os.environ.get('DATABASE_URL') is None:
+if os.environ.get("DATABASE_URL") is None:
     DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'HOST': os.environ.get('DB_HOST'),
-                'NAME': os.environ.get('DB_NAME'),
-                'USER': os.environ.get('DB_USER'), 
-                'PASSWORD': os.environ.get('DB_PASS'),
-            }
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "HOST": os.environ.get("DB_HOST"),
+            "NAME": os.environ.get("DB_NAME"),
+            "USER": os.environ.get("DB_USER"),
+            "PASSWORD": os.environ.get("DB_PASS"),
         }
+    }
 else:
     import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-    }
+
+    DATABASES = {"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -253,9 +259,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -263,21 +269,21 @@ USE_TZ = True
 
 
 # Static Files
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_DIRS = [BASE_DIR / 'core/static', BASE_DIR / 'media']
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = [BASE_DIR / "core/static", BASE_DIR / "media"]
 
 # Media Files (User Uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # UNFOLD settings
-UNFOLD_GROUP_MODEL = 'auth.Group'
-UNFOLD ={
+UNFOLD_GROUP_MODEL = "auth.Group"
+UNFOLD = {
     "SITE_TITLE": "KinamelNepal",
     "SITE_HEADER": "KinamelNepal",
     # "SITE_ICON": {
@@ -301,32 +307,32 @@ UNFOLD ={
         "image": lambda request: static("core/images/login-bg.jpg"),
         # "redirect_after": lambda request: reverse_lazy("admin:APP_MODEL_changelist"),
     },
-    "COLORS":{
+    "COLORS": {
         "base": {
-            "50": "240 240 245",   # very light color
+            "50": "240 240 245",  # very light color
             "100": "220 220 230",  # light color
             "200": "190 190 200",  # light-medium color
             "300": "160 160 180",  # medium light color
             "400": "130 130 160",  # medium color
             "500": "100 100 140",  # base color (more neutral)
-            "600": "80 80 120",    # medium dark
-            "700": "60 60 100",    # dark
-            "800": "40 40 80",     # very dark
-            "900": "20 20 60",     # almost black
-            "950": "10 10 40"      # near black
+            "600": "80 80 120",  # medium dark
+            "700": "60 60 100",  # dark
+            "800": "40 40 80",  # very dark
+            "900": "20 20 60",  # almost black
+            "950": "10 10 40",  # near black
         },
         "primary": {
-            "50": "240 240 245",   # very light color
+            "50": "240 240 245",  # very light color
             "100": "220 220 230",  # light color
             "200": "190 190 200",  # light-medium color
             "300": "160 160 180",  # medium light color
             "400": "130 130 160",  # medium color
             "500": "100 100 140",  # base color (more neutral)
-            "600": "80 80 120",    # medium dark
-            "700": "60 60 100",    # dark
-            "800": "40 40 80",     # very dark
-            "900": "20 20 60",     # almost black
-            "950": "10 10 40"      # near black
+            "600": "80 80 120",  # medium dark
+            "700": "60 60 100",  # dark
+            "800": "40 40 80",  # very dark
+            "900": "20 20 60",  # almost black
+            "950": "10 10 40",  # near black
         },
         # "primary": {
         #     "50": "250 245 255",    # very light lavender shade
@@ -366,7 +372,6 @@ UNFOLD ={
         #         ],
         #     },
         # ],
-    
     },
     # "TABS": [
     #     {
@@ -382,32 +387,31 @@ UNFOLD ={
     #         ],
     #     },
     # ],
-            
 }
 
-# FIND STATIC FILES 
+# FIND STATIC FILES
 STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'django_plotly_dash.finders.DashAssetFinder',
-    'django_plotly_dash.finders.DashComponentFinder',
-    'django_plotly_dash.finders.DashAppDirectoryFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_plotly_dash.finders.DashAssetFinder",
+    "django_plotly_dash.finders.DashComponentFinder",
+    "django_plotly_dash.finders.DashAppDirectoryFinder",
 ]
 
 # ASGI APPLICATION
-ASGI_APPLICATION = 'core.asgi.application'
+ASGI_APPLICATION = "core.asgi.application"
 
-#CLOUDINARY CONFIGURATION SETTINGS
+# CLOUDINARY CONFIGURATION SETTINGS
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 
-EXCHANGE_RATE_API_KEY = os.environ.get('EXCHANGE_RATE_API_KEY')
+EXCHANGE_RATE_API_KEY = os.environ.get("EXCHANGE_RATE_API_KEY")
 
 
 # CKEDITOR CONFIG FOR IMAGE UPLOADING
@@ -417,9 +421,9 @@ CKEDITOR_IMAGE_BACKEND = "pillow"
 CKEDITOR_ALLOW_NONIMAGE_FILES = False
 
 CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'full',
-        'extraPlugins': ','.join(['image2']),
-        'removePlugins': 'image',
+    "default": {
+        "toolbar": "full",
+        "extraPlugins": ",".join(["image2"]),
+        "removePlugins": "image",
     }
 }

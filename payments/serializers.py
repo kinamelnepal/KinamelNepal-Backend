@@ -1,14 +1,16 @@
 from rest_framework import serializers
-from .models import Payment
-from orders.models import Order
+
 # from orders.serializers import OrderSerializer
 from core.serializers import BaseModelSerializer
-from products.utils.currency import get_exchange_rate, CURRENCY_TO_SYMBOL_MAPPING
+from orders.models import Order
+from products.utils.currency import CURRENCY_TO_SYMBOL_MAPPING, get_exchange_rate
+
+from .models import Payment
 
 
 class PaymentSerializer(BaseModelSerializer):
     order_id = serializers.PrimaryKeyRelatedField(
-        source='order', queryset=Order.objects.all(), write_only=True
+        source="order", queryset=Order.objects.all(), write_only=True
     )
     # order = OrderSerializer(read_only=True)
 
@@ -21,20 +23,38 @@ class PaymentSerializer(BaseModelSerializer):
     class Meta:
         model = Payment
         fields = [
-            'id', 'uuid', 'order_id', 'method', 'payment_status',
-            'amount', 'amount_converted', 'tax_amount', 'tax_amount_converted',
-            'total_amount', 'total_amount_converted', 'transaction_id', 'gateway_response',
-            'paid_at', 'product_code', 'signed_field_names', 'signature',
-            'card_last4', 'card_brand', 'notes',
-            'currency', 'currency_symbol', 'created_at', 'updated_at',
+            "id",
+            "uuid",
+            "order_id",
+            "method",
+            "payment_status",
+            "amount",
+            "amount_converted",
+            "tax_amount",
+            "tax_amount_converted",
+            "total_amount",
+            "total_amount_converted",
+            "transaction_id",
+            "gateway_response",
+            "paid_at",
+            "product_code",
+            "signed_field_names",
+            "signature",
+            "card_last4",
+            "card_brand",
+            "notes",
+            "currency",
+            "currency_symbol",
+            "created_at",
+            "updated_at",
         ]
 
     def get_currency(self, obj):
-        return self.context.get('currency', 'NPR')
+        return self.context.get("currency", "NPR")
 
     def get_currency_symbol(self, obj):
         currency = self.get_currency(obj).upper()
-        return CURRENCY_TO_SYMBOL_MAPPING.get(currency, 'Rs')
+        return CURRENCY_TO_SYMBOL_MAPPING.get(currency, "Rs")
 
     def convert_amount(self, amount):
         currency = self.get_currency(None).upper()
@@ -67,15 +87,15 @@ class PaymentSerializer(BaseModelSerializer):
         return value
 
     def validate(self, attrs):
-        if attrs.get('method') == 'esewa':
-            required_fields = ['product_code', 'signed_field_names', 'signature']
+        if attrs.get("method") == "esewa":
+            required_fields = ["product_code", "signed_field_names", "signature"]
             for field in required_fields:
                 if not attrs.get(field):
                     raise serializers.ValidationError(
                         f"{field} is required for eSewa payments."
                     )
-        if attrs.get('method') == 'card':
-            if not attrs.get('card_last4') or not attrs.get('card_brand'):
+        if attrs.get("method") == "card":
+            if not attrs.get("card_last4") or not attrs.get("card_brand"):
                 raise serializers.ValidationError(
                     "Card metadata (last4 and brand) must be provided for card payments."
                 )
@@ -85,4 +105,4 @@ class PaymentSerializer(BaseModelSerializer):
 class EsewaVerificationSerializer(serializers.Serializer):
     oid = serializers.CharField()
     amt = serializers.DecimalField(max_digits=10, decimal_places=2)
-    refId = serializers.CharField() 
+    refId = serializers.CharField()

@@ -1,14 +1,13 @@
-from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from rest_framework.response import Response
-from drf_spectacular.utils import (
-    extend_schema, extend_schema_view, OpenApiParameter
-)
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework import filters, viewsets
+from rest_framework.permissions import IsAuthenticated
+
+from core.mixins import MultiLookupMixin
+
+from .filters import AddressFilter
 from .models import Address
 from .serializers import AddressSerializer
-from .filters import AddressFilter
-from core.mixins import MultiLookupMixin
 
 
 @extend_schema_view(
@@ -18,13 +17,13 @@ from core.mixins import MultiLookupMixin
         description="Fetch all addresses stored in the system.",
         parameters=[
             OpenApiParameter(
-                name='all',
+                name="all",
                 type=str,
-                description='If set to `true`, disables pagination and returns all addresses.',
+                description="If set to `true`, disables pagination and returns all addresses.",
                 required=False,
-                enum=['true', 'false']
+                enum=["true", "false"],
             ),
-        ]
+        ],
     ),
     retrieve=extend_schema(
         tags=["Address"],
@@ -55,19 +54,19 @@ from core.mixins import MultiLookupMixin
 class AddressViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = AddressFilter
-    ordering_fields = ['id', 'full_name', 'created_at']
-    ordering = ['-created_at']
+    ordering_fields = ["id", "full_name", "created_at"]
+    ordering = ["-created_at"]
 
     def get_permissions(self):
-            return [IsAuthenticated()]
+        return [IsAuthenticated()]
 
     def paginate_queryset(self, queryset):
-        all_param = self.request.query_params.get('all', None)
-        if all_param == 'true':
+        all_param = self.request.query_params.get("all", None)
+        if all_param == "true":
             return None
         return super().paginate_queryset(queryset)

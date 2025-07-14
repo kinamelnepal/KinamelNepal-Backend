@@ -1,11 +1,13 @@
-from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework import filters, viewsets
 from rest_framework.permissions import AllowAny, IsAdminUser
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+
 from core.mixins import MultiLookupMixin
+
 from .filters import ContactFilter
-from .serializers import ContactSerializer
 from .models import Contact
+from .serializers import ContactSerializer
 
 
 @extend_schema_view(
@@ -15,13 +17,13 @@ from .models import Contact
         description="Fetch all contact form submissions.",
         parameters=[
             OpenApiParameter(
-                name='all',
+                name="all",
                 type=str,
-                description='If set to `true`, disables pagination and returns all contact messages.',
+                description="If set to `true`, disables pagination and returns all contact messages.",
                 required=False,
-                enum=['true', 'false']
+                enum=["true", "false"],
             )
-        ]
+        ],
     ),
     retrieve=extend_schema(
         tags=["Contact"],
@@ -52,22 +54,26 @@ from .models import Contact
 class ContactViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action == "create":
             return [AllowAny()]
         return [IsAdminUser()]
 
     def paginate_queryset(self, queryset):
-        all_param = self.request.query_params.get('all', None)
-        if all_param == 'true':
+        all_param = self.request.query_params.get("all", None)
+        if all_param == "true":
             return None
         return super().paginate_queryset(queryset)
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
     filterset_class = ContactFilter
-    search_fields = ['full_name', 'email']
-    ordering_fields = ['created_at', 'updated_at']
-    ordering = ['-created_at']
+    search_fields = ["full_name", "email"]
+    ordering_fields = ["created_at", "updated_at"]
+    ordering = ["-created_at"]

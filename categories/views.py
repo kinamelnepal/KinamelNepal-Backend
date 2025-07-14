@@ -1,16 +1,22 @@
-from rest_framework import viewsets, status, filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
-from core.mixins import MultiLookupMixin
-from .filters import CategoryFilter
-from .serializers import CategorySerializer
-from .models import Category
 from django.db import IntegrityError
-from drf_spectacular.utils import extend_schema_view
-from drf_spectacular.utils import OpenApiResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+
+from core.mixins import MultiLookupMixin
+
+from .filters import CategoryFilter
+from .models import Category
+from .serializers import CategorySerializer
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -19,13 +25,13 @@ from drf_spectacular.utils import OpenApiResponse
         description="Fetch all categories available in the system.",
         parameters=[
             OpenApiParameter(
-                name='all',
+                name="all",
                 type=str,
-                description='If set to `true`, disables pagination and returns all categories.',
+                description="If set to `true`, disables pagination and returns all categories.",
                 required=False,
-                enum=['true', 'false']
+                enum=["true", "false"],
             )
-        ]
+        ],
     ),
     retrieve=extend_schema(
         tags=["Category"],
@@ -61,64 +67,68 @@ from drf_spectacular.utils import OpenApiResponse
             201: OpenApiResponse(
                 description="Categories successfully created",
             ),
-            400: OpenApiResponse(
-                description="Bad Request, invalid data"
-            ),
+            400: OpenApiResponse(description="Bad Request, invalid data"),
         },
     ),
 )
 class CategoryViewSet(MultiLookupMixin, viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'pk'
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy', 'bulk_create']:
+        if self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+            "bulk_create",
+        ]:
             return [IsAuthenticated(), IsAdminUser()]
         else:
             return [AllowAny()]
 
     def paginate_queryset(self, queryset):
-        all_param = self.request.query_params.get('all', None)
-        if all_param == 'true':
+        all_param = self.request.query_params.get("all", None)
+        if all_param == "true":
             return None
         return super().paginate_queryset(queryset)
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name']
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    search_fields = ["name"]
     filterset_class = CategoryFilter
-    ordering_fields = ['id', 'name', 'item', 'num', 'created_at', 'updated_at']
-    ordering = ['-created_at']
+    ordering_fields = ["id", "name", "item", "num", "created_at", "updated_at"]
+    ordering = ["-created_at"]
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def bulk_create(self, request):
         """
         Bulk create categories. Accepts a list of category data and creates all categories in one go.
         """
         try:
-        
+
             serializer = CategorySerializer(data=request.data, many=True)
-            
+
             if serializer.is_valid():
                 categories = serializer.save()
 
                 return Response(
                     {"message": f"{len(categories)} categories created successfully."},
-                    status=status.HTTP_201_CREATED
+                    status=status.HTTP_201_CREATED,
                 )
             else:
                 return Response(
-                    {"error": serializer.errors},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
                 )
         except IntegrityError as e:
             return Response(
                 {"error": "Integrity error occurred: " + str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
