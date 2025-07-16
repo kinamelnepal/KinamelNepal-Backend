@@ -39,6 +39,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://kinamelnepal-backend-app-q4767.ondigitalocean.app",
+]
 
 # Application definition
 INSTALLED_APPS = [
