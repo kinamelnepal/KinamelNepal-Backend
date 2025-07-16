@@ -1,5 +1,6 @@
 from django_countries import countries
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from geopy.geocoders import Nominatim
 from rest_framework import filters, status, viewsets
@@ -115,6 +116,7 @@ class APIKeyViewSet(MultiLookupMixin, BulkOperationsMixin, BaseViewSet):
         tags=["API Key"],
         summary="Deactivate API Key",
         description="Deactivate a specific API key by setting its `is_active` field to `False`.",
+        responses={200: OpenApiTypes.OBJECT},
     )
     @action(
         detail=True,
