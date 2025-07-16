@@ -1,16 +1,16 @@
 from django_countries import countries
-from drf_spectacular.utils import (
-    OpenApiParameter,
-    OpenApiResponse,
-    extend_schema,
-    extend_schema_view,
-)
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from geopy.geocoders import Nominatim
-from rest_framework import status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from core.mixins import BulkOperationsMixin, MultiLookupMixin
+from core.utils import generate_bulk_schema_view, generate_crud_schema_view
 
 from .models import APIKey
 from .serializers import APIKeySerializer, GeoLocationSerializer
@@ -59,56 +59,41 @@ class GeoLocationView(APIView):
         return Response({"error": "Address not found"}, status=404)
 
 
-@extend_schema_view(
-    list=extend_schema(
-        summary="List API Keys",
-        description="Retrieve a list of all API keys. Only accessible by superusers.",
-        responses={200: APIKeySerializer(many=True)},
-        tags=["API Keys"],
-    ),
-    retrieve=extend_schema(
-        summary="Retrieve API Key",
-        description="Get detailed information on a specific API key by its ID. Superuser access required.",
-        responses={200: APIKeySerializer},
-        tags=["API Keys"],
-    ),
-    create=extend_schema(
-        summary="Create API Key",
-        description=(
-            "Creates a new API key. The key is auto‑generated and cannot be provided manually. "
-            "Only accessible by superusers."
-        ),
-        responses={201: APIKeySerializer},
-        tags=["API Keys"],
-    ),
-    update=extend_schema(
-        summary="Update API Key",
-        description="Update details of an API key (e.g. the active status). Superuser access required.",
-        responses={200: APIKeySerializer},
-        tags=["API Keys"],
-    ),
-    partial_update=extend_schema(
-        summary="Partial Update API Key",
-        description="Partially update an API key. Only accessible by superusers.",
-        responses={200: APIKeySerializer},
-        tags=["API Keys"],
-    ),
-    destroy=extend_schema(
-        summary="Delete API Key",
-        description="Delete an API key. Only accessible by superusers.",
-        responses={204: OpenApiResponse(description="API key deleted successfully.")},
-        tags=["API Keys"],
-    ),
-    deactivate=extend_schema(
-        summary="Deactivate API Key",
-        description="Deactivate an API key. This prevents the key from being used for API access.",
-        responses={
-            200: OpenApiResponse(description="API key deactivated successfully.")
-        },
-        tags=["API Keys"],
-    ),
-)
-class APIKeyViewSet(viewsets.ModelViewSet):
+class BaseViewSet(viewsets.ModelViewSet):
+    permission_classes_by_action = {
+        "list": [AllowAny],
+        "retrieve": [AllowAny],
+        "default": [IsAdminUser],
+    }
+
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
+
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    ordering = ["-created_at"]
+
+    def get_permissions(self):
+        return [
+            permission()
+            for permission in self.permission_classes_by_action.get(
+                self.action, self.permission_classes_by_action["default"]
+            )
+        ]
+
+    def paginate_queryset(self, queryset):
+        all_param = self.request.query_params.get("all")
+        if all_param == "true":
+            return None
+        return super().paginate_queryset(queryset)
+
+
+@generate_bulk_schema_view("API Key", APIKeySerializer)
+@generate_crud_schema_view("API Key")
+class APIKeyViewSet(MultiLookupMixin, BulkOperationsMixin, BaseViewSet):
     """
     ViewSet restricted to superusers only for managing API keys.
     """
@@ -116,6 +101,7 @@ class APIKeyViewSet(viewsets.ModelViewSet):
     queryset = APIKey.objects.all().order_by("-created_at")
     serializer_class = APIKeySerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+    bulk_schema_tag = "API Key"
 
     def create(self, request, *args, **kwargs):
         """
@@ -126,8 +112,16 @@ class APIKeyViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        tags=["API Key"],
+        summary="Deactivate API Key",
+        description="Deactivate a specific API key by setting its `is_active` field to `False`.",
+        responses={200: OpenApiTypes.OBJECT},
+    )
     @action(
-        detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser]
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated, IsAdminUser],
     )
     def deactivate(self, request, pk=None):
         """
@@ -137,3 +131,32 @@ class APIKeyViewSet(viewsets.ModelViewSet):
         api_key.is_active = False
         api_key.save()
         return Response({"status": "API key deactivated"}, status=status.HTTP_200_OK)
+
+
+class HealthCheckView(APIView):
+    """
+    A simple health-check endpoint to verify the API's availability.
+    """
+
+    @extend_schema(
+        summary="Health Check API",
+        tags=["Test"],
+        description="Returns the health status of the API.",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string", "example": "healthy"},
+                    "message": {
+                        "type": "string",
+                        "example": "The API is running smoothly.",
+                    },
+                },
+            }
+        },
+    )
+    def get(self, request):
+        return Response(
+            {"status": "healthy", "message": "The API is running smoothly."},
+            status=status.HTTP_200_OK,
+        )

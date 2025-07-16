@@ -124,3 +124,8 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 class VerifyEmailSerializer(serializers.Serializer):
     token = serializers.UUIDField()
+
+
+class ResendTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    is_mobile = serializers.BooleanField(default=True)

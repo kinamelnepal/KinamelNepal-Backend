@@ -1,27 +1,25 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import filters, status, viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from rest_framework.response import Response
 
-from core.mixins import MultiLookupMixin
+from core.mixins import BulkOperationsMixin, MultiLookupMixin
+from core.utils import generate_bulk_schema_view, generate_crud_schema_view
+from core.views import BaseViewSet
 
+from .actions import bulk_insert
 from .filters import ProductFilter
 from .models import Product
 from .serializers import ProductSerializer
 
 
+@generate_bulk_schema_view("Product", ProductSerializer)
+@generate_crud_schema_view("Product")
 @extend_schema_view(
     list=extend_schema(
-        tags=["Product"],
-        summary="Retrieve a list of products",
-        description="Fetch all products available in the system.",
         parameters=[
             OpenApiParameter(
                 name="all",
                 type=str,
-                description="If set to `true`, disables pagination and returns all products.",
+                description="If set to `true`, disables pagination and returns all orders.",
                 required=False,
                 enum=["true", "false"],
             ),
@@ -33,62 +31,16 @@ from .serializers import ProductSerializer
                 enum=["NPR", "USD", "EUR"],
             ),
         ],
-    ),
-    retrieve=extend_schema(
-        tags=["Product"],
-        summary="Retrieve a specific product",
-        description="Fetch detailed information about a specific product by its ID.",
-    ),
-    create=extend_schema(
-        tags=["Product"],
-        summary="Create a new product",
-        description="Create a new product with the required details.",
-    ),
-    update=extend_schema(
-        tags=["Product"],
-        summary="Update a product's details",
-        description="Modify an existing product's information entirely (PUT method).",
-    ),
-    partial_update=extend_schema(
-        tags=["Product"],
-        summary="Partially update a product's details",
-        description="Modify some fields of an existing product (PATCH method).",
-    ),
-    destroy=extend_schema(
-        tags=["Product"],
-        summary="Delete a product",
-        description="Remove a product from the system by its ID.",
-    ),
+        tags=["Order"],
+        summary="Retrieve a list of orders",
+        description="Fetch all orders available in the system.",
+    )
 )
-class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
+class ProductViewSet(MultiLookupMixin, BulkOperationsMixin, BaseViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = "pk"
-    lookup_url_kwarg = "pk"
-
-    def get_permissions(self):
-        if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [IsAuthenticated(), IsAdminUser()]
-        else:
-            return [AllowAny()]
-
-    def paginate_queryset(self, queryset):
-        """
-        Override paginate_queryset to check for 'all=true' query parameter.
-        """
-        all_param = self.request.query_params.get("all", None)
-        if all_param == "true":
-            return None
-        return super().paginate_queryset(queryset)
-
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
-
-    search_fields = ["title", "brand"]
     filterset_class = ProductFilter
+    search_fields = ["title", "brand"]
     ordering_fields = [
         "id",
         "new_price",
@@ -102,41 +54,30 @@ class ProductViewSet(MultiLookupMixin, viewsets.ModelViewSet):
         "title",
     ]
     ordering = ["-created_at"]
+    bulk_schema_tag = "Product"
+
+    permission_classes_by_action = {
+        "list": [AllowAny],
+        "retrieve": [AllowAny],
+        "bulk_insert": [IsAuthenticated, IsAdminUser],
+        "create": [IsAuthenticated, IsAdminUser],
+        "update": [IsAuthenticated, IsAdminUser],
+        "partial_update": [IsAuthenticated, IsAdminUser],
+        "destroy": [IsAuthenticated, IsAdminUser],
+        "default": [AllowAny],
+    }
+
+    def paginate_queryset(self, queryset):
+        all_param = self.request.query_params.get("all", None)
+        if all_param == "true":
+            return None
+        return super().paginate_queryset(queryset)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        print(self.request.query_params.get("currency"), "the currency")
         currency = self.request.query_params.get("currency", "NPR").upper()
         context["currency"] = currency
         return context
 
-    @extend_schema(
-        tags=["Product"],
-        summary="Bulk Insert Products",
-        description="Insert multiple products into the system in a single request.",
-        request=ProductSerializer(many=True),
-    )
-    @action(detail=False, methods=["post"])
-    def bulk_insert(self, request, *args, **kwargs):
-        """
-        Bulk insert products into the system.
-        Accepts a list of products to insert.
-        """
-        products_data = request.data
-
-        if not isinstance(products_data, list) or len(products_data) == 0:
-            return Response(
-                {"detail": "Expected 'products' to be a non-empty list."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = ProductSerializer(data=products_data, many=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"detail": f"{len(products_data)} products successfully inserted."},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # ✅ Assign custom action
+    bulk_insert = bulk_insert

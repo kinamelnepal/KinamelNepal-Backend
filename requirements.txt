@@ -27,7 +27,7 @@ dash-html-components==2.0.0
 dash-table==5.0.0
 distlib==0.3.9
 dj-database-url==0.5.0
-Django==3.2.25
+Django==4.2.23
 django-appconf==1.1.0
 django-bootstrap4==24.1
 django-ckeditor==6.7.3
@@ -41,7 +41,7 @@ django-js-asset==2.2.0
 django-plotly-dash==2.2.2
 django-ratelimit==4.1.0
 django-unfold==0.44.0
-djangorestframework==3.12.4
+djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 dpd-static-support==0.0.5
 dpd_components==0.1.0

@@ -4,8 +4,16 @@ from django.contrib import admin
 from django.shortcuts import get_object_or_404
 from django.utils.timesince import timesince
 from django.utils.timezone import now
-from drf_spectacular.utils import OpenApiParameter, extend_schema_field
-from rest_framework import status
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_field,
+    inline_serializer,
+)
+from rest_framework import serializers, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 
@@ -108,3 +116,90 @@ class MultiLookupMixin:
     def retrieve(self, request, *args, **kwargs):
         """Retrieve user by ID, UUID, or Slug."""
         return super().retrieve(request, *args, **kwargs)
+
+
+class BulkOperationsMixin:
+    bulk_schema_tag = None
+
+    def get_model(self):
+        return self.get_queryset().model
+
+    def get_bulk_tag(self):
+        return [self.bulk_schema_tag or self.__class__.__name__]
+
+    def get_bulk_update_serializer(self):
+        base_serializer = self.get_serializer().__class__
+        fields = base_serializer().get_fields()
+        fields["id"] = serializers.IntegerField()
+        return type("BulkUpdateSerializer", (serializers.Serializer,), fields)
+
+    @extend_schema(
+        summary="Bulk create",
+        description="Create multiple records at once.",
+        tags=None,
+        responses={201: OpenApiResponse(description="Created successfully")},
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="bulk-create",
+        permission_classes=[IsAdminUser],
+    )
+    def bulk_create(self, request):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.get_model().objects.bulk_create(
+            [self.get_model()(**item) for item in serializer.validated_data]
+        )
+        return Response({"message": "Bulk create successful"}, status=201)
+
+    @extend_schema(
+        summary="Bulk update",
+        description="Update multiple records at once.",
+        tags=None,
+        request=None,
+        responses={200: OpenApiResponse(description="Updated successfully")},
+    )
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path="bulk-update",
+        permission_classes=[IsAdminUser],
+    )
+    def bulk_update(self, request):
+        serializer_class = self.get_bulk_update_serializer()
+        serializer = serializer_class(data=request.data, many=True, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        model = self.get_model()
+        updated = 0
+        for item in serializer.validated_data:
+            obj = model.objects.filter(id=item.get("id")).first()
+            if obj:
+                serializer = self.get_serializer(obj, data=item, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                updated += 1
+
+        return Response({"message": "Bulk update successful", "updated_count": updated})
+
+    @extend_schema(
+        summary="Bulk delete",
+        description="Delete multiple records by ID.",
+        tags=None,
+        request=inline_serializer(
+            name="BulkDeleteInput",
+            fields={"ids": serializers.ListField(child=serializers.IntegerField())},
+        ),
+        responses={200: OpenApiResponse(description="Deleted successfully")},
+    )
+    @action(
+        detail=False,
+        methods=["delete"],
+        url_path="bulk-delete",
+        permission_classes=[IsAdminUser],
+    )
+    def bulk_delete(self, request):
+        ids = request.data.get("ids", [])
+        deleted, _ = self.get_model().objects.filter(id__in=ids).delete()
+        return Response({"message": "Bulk delete successful", "deleted_count": deleted})
