@@ -7,11 +7,11 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers
 
 
-def generate_4_digit_unique_pass_code(Model):
+def generate_4_digit_unique_pass_code(model):
 
     while True:
         pass_code = random.randint(1000, 9999)
-        if not Model.objects.filter(pass_code=pass_code).exists():
+        if not model.objects.filter(pass_code=pass_code).exists():
             return pass_code
 
 

@@ -70,7 +70,6 @@ class SoftDeleteAdmin(admin.ModelAdmin):
 
 @admin.register(APIKey)
 class APIKeyAdmin(ModelAdmin):
-    # compressed_fields = ()
     list_display = ("key", "name", "is_active", "created_at")
     search_fields = ("key", "name")
     list_filter = ("is_active", "created_at")

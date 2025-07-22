@@ -27,12 +27,14 @@ from .serializers import (
     VerifyEmailSerializer,
 )
 
+EMAIL_CONTENT_TYPE = "text/html"
+VERIFY_EMAIL_TEMPLATE = "emails/verify_email.html"
+
 
 @extend_schema(
     summary="Register a new user",
     description="Register a new user by providing their details. Returns the created user and JWT tokens.",
     tags=["User"],
-    # serializer=UserSerializer,
     request=UserRegisterSerializer(),
     responses={
         201: OpenApiResponse(
@@ -70,7 +72,7 @@ def register(self, request):
     token = EmailVerificationToken.objects.create(user=user)
     verify_link = f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/verify-email?token={token.token}"
     html_content = render_to_string(
-        "emails/verify_email.html",
+        VERIFY_EMAIL_TEMPLATE,
         {
             "full_name": f"{user.first_name} {user.last_name}",
             "verify_link": verify_link,
@@ -83,7 +85,7 @@ def register(self, request):
         from_email=os.environ.get("EMAIL_HOST_USER"),
         to=[user.email],
     )
-    verification_email.attach_alternative(html_content, "text/html")
+    verification_email.attach_alternative(html_content, EMAIL_CONTENT_TYPE)
     try:
         verification_email.send(fail_silently=False)
     except Exception:
@@ -164,9 +166,6 @@ def login(self, request):
         return Response(
             {"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED
         )
-
-    # if not user.is_active:
-    #     return Response({'error': 'This account is currently not active'}, status=status.HTTP_401_UNAUTHORIZED)
 
     if not user.email_verified:
         return Response(
@@ -337,7 +336,7 @@ def forgot_password(self, request):
         from_email=os.environ.get("EMAIL_HOST_USER"),
         to=[user.email],
     )
-    email_msg.attach_alternative(html_content, "text/html")
+    email_msg.attach_alternative(html_content, EMAIL_CONTENT_TYPE)
 
     try:
         email_msg.send(fail_silently=False)
@@ -400,7 +399,7 @@ def reset_password(self, request):
         from_email=os.environ.get("EMAIL_HOST_USER"),
         to=[user.email],
     )
-    success_email.attach_alternative(html_content, "text/html")
+    success_email.attach_alternative(html_content, EMAIL_CONTENT_TYPE)
     try:
         success_email.send(fail_silently=False)
     except Exception:
@@ -456,7 +455,7 @@ def verify_email(self, request):
         from_email=os.environ.get("EMAIL_HOST_USER"),
         to=[user.email],
     )
-    success_email.attach_alternative(html_content, "text/html")
+    success_email.attach_alternative(html_content, EMAIL_CONTENT_TYPE)
     try:
         success_email.send(fail_silently=False)
     except Exception:
@@ -527,7 +526,7 @@ def resend_verification_token(self, request):
         otp = random.randint(100000, 999999)
         EmailVerificationToken.objects.create(user=user, otp=otp)
         html_content = render_to_string(
-            "emails/verify_email.html",
+            VERIFY_EMAIL_TEMPLATE,
             {
                 "is_mobile": True,
                 "full_name": f"{user.first_name} {user.last_name}",
@@ -539,10 +538,9 @@ def resend_verification_token(self, request):
         request_base_url = request.build_absolute_url()
 
         EmailVerificationToken.objects.create(user=user, token=uuid_token)
-        # verify_link = f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/verify-email?token={uuid_token}"
         verify_link = f"{request_base_url}verify-email?token={uuid_token}"
         html_content = render_to_string(
-            "emails/verify_email.html",
+            VERIFY_EMAIL_TEMPLATE,
             {
                 "is_mobile": False,
                 "full_name": f"{user.first_name} {user.last_name}",
@@ -556,7 +554,7 @@ def resend_verification_token(self, request):
         from_email=os.environ.get("EMAIL_HOST_USER"),
         to=[user.email],
     )
-    verification_email.attach_alternative(html_content, "text/html")
+    verification_email.attach_alternative(html_content, EMAIL_CONTENT_TYPE)
     try:
         verification_email.send(fail_silently=False)
     except Exception:

@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-# from orders.serializers import OrderSerializer
 from core.serializers import BaseModelSerializer
 from orders.models import Order
 from products.utils.currency import CURRENCY_TO_SYMBOL_MAPPING, get_exchange_rate
@@ -12,7 +11,6 @@ class PaymentSerializer(BaseModelSerializer):
     order_id = serializers.PrimaryKeyRelatedField(
         source="order", queryset=Order.objects.all(), write_only=True
     )
-    # order = OrderSerializer(read_only=True)
 
     currency = serializers.SerializerMethodField()
     currency_symbol = serializers.SerializerMethodField()
