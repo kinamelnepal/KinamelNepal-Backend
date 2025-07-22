@@ -73,7 +73,7 @@ class FormatBaseModelFieldsMixin(admin.ModelAdmin):
 
 
 class SoftDeleteMixin:
-    def delete(self, request, *args, **kwargs):
+    def delete(self):
         """Soft deletes the object and returns a response."""
         instance = self.get_object()
         instance.soft_delete()

@@ -18,7 +18,6 @@ def initiate_esewa_payment(payment):
 
 
 def build_esewa_payment_url(payment):
-    # base_url = "https://uat.esewa.com.np/epay/main"
     base_url = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"
 
     params = {

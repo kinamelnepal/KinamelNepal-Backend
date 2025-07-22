@@ -11,14 +11,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
 from django.templatetags.static import static
 
-print(os.environ.get("CLOUDINARY_CLOUD_NAME"))
-print(os.environ.get("CLOUDINARY_API_KEY"))
-print(os.environ.get("CLOUDINARY_API_SECRET"))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,13 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "test-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
-# CORS_ALLOWED_ORIGINS = os.environ.get('ALLOWED_HOSTS').split(',')
-# ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 ALLOWED_HOSTS = ["localhost", "*", "localhost:3000", "http://localhost:3000"]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
@@ -239,6 +235,14 @@ else:
     import dj_database_url
 
     DATABASES = {"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))}
+
+
+# For testing purposes, use SQLite in memory
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

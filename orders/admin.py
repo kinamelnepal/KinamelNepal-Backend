@@ -8,6 +8,8 @@ from core.mixins import FormatBaseModelFieldsMixin, HideBaseModelFieldsMixin
 
 from .models import Order, OrderItem
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 # Custom form for Order model
 class OrderAdminForm(forms.ModelForm):
@@ -53,12 +55,12 @@ class OrderAdmin(
     readonly_fields = ("created_at", "updated_at")
 
     def formatted_created_at(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.created_at.strftime(DATE_FORMAT)
 
     formatted_created_at.short_description = "Created At"
 
     def formatted_updated_at(self, obj):
-        return obj.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.updated_at.strftime(DATE_FORMAT)
 
     formatted_updated_at.short_description = "Updated At"
 
@@ -107,12 +109,12 @@ class OrderItemAdmin(
     readonly_fields = ("created_at", "updated_at")
 
     def formatted_created_at(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.created_at.strftime(DATE_FORMAT)
 
     formatted_created_at.short_description = "Created At"
 
     def formatted_updated_at(self, obj):
-        return obj.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        return obj.updated_at.strftime(DATE_FORMAT)
 
     formatted_updated_at.short_description = "Updated At"
 

@@ -10,6 +10,8 @@ from django.utils.text import slugify
 from .managers import BaseModelManager
 from .utils import get_current_user
 
+USER_MODEL = "users.User"
+
 
 class BaseModel(models.Model):
     objects = BaseModelManager()
@@ -21,7 +23,7 @@ class BaseModel(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     created_by = models.ForeignKey(
-        "users.User",
+        USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -29,7 +31,7 @@ class BaseModel(models.Model):
         editable=False,
     )
     updated_by = models.ForeignKey(
-        "users.User",
+        USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -37,7 +39,7 @@ class BaseModel(models.Model):
         editable=False,
     )
     deleted_by = models.ForeignKey(
-        "users.User",
+        USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

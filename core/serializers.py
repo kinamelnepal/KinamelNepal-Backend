@@ -69,18 +69,19 @@ class BaseModelSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         model = self.Meta.model
 
-        # Get unique fields directly from the model class (without using Meta)
         model_unique_fields = getattr(model, "unique_fields", [])
-
-        # Get base_unique_fields from the base model (similar to before)
         base_unique_fields = getattr(model.__base__, "unique_fields", [])
         print(
             f"Model: {model.__name__}, Model Unique Fields: {model_unique_fields}, Base Unique Fields: {base_unique_fields}"
         )
 
-        # --------------------------
-        # 1. Validate model_unique_fields (within this model)
-        for field in model_unique_fields:
+        self._validate_model_unique_fields(model, attrs, model_unique_fields)
+        self._validate_base_unique_fields(model, attrs, base_unique_fields)
+
+        return super().validate(attrs)
+
+    def _validate_model_unique_fields(self, model, attrs, unique_fields):
+        for field in unique_fields:
             value = attrs.get(field)
             if value is None:
                 continue
@@ -96,40 +97,40 @@ class BaseModelSerializer(serializers.ModelSerializer):
                     }
                 )
 
-        # --------------------------
-        # 2. Validate base_unique_fields (across all BaseModel subclasses)
+    def _validate_base_unique_fields(self, model, attrs, base_unique_fields):
         for field in base_unique_fields:
             value = attrs.get(field)
             if value is None:
                 continue
 
-            # Create a Q object to build a query condition to check across all models inheriting from BaseModel
             condition = Q(**{field: value, "is_deleted": False})
+            self._check_field_in_other_models(model, field, value, condition)
 
-            # Check all models that are subclasses of BaseModel
-            for other_model in apps.get_models():
-                if not issubclass(other_model, model.__base__):
-                    continue
+    def _check_field_in_other_models(self, model, field, value, condition):
+        for other_model in apps.get_models():
+            if not issubclass(other_model, model.__base__):
+                continue
 
-                # Skip models that don't have the field
-                try:
-                    other_model._meta.get_field(field)
-                except FieldDoesNotExist:
-                    continue
+            if not self._model_has_field(other_model, field):
+                continue
 
-                # Query the model for the field's uniqueness
-                qs = other_model.objects.filter(condition)
-                if self.instance and isinstance(self.instance, other_model):
-                    qs = qs.exclude(pk=self.instance.pk)
+            qs = other_model.objects.filter(condition)
+            if self.instance and isinstance(self.instance, other_model):
+                qs = qs.exclude(pk=self.instance.pk)
 
-                if qs.exists():
-                    raise serializers.ValidationError(
-                        {
-                            field: f"{field.title()} '{value}' already exists in '{other_model.__name__}'"
-                        }
-                    )
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {
+                        field: f"{field.title()} '{value}' already exists in '{other_model.__name__}'"
+                    }
+                )
 
-        return super().validate(attrs)
+    def _model_has_field(self, model, field):
+        try:
+            model._meta.get_field(field)
+            return True
+        except FieldDoesNotExist:
+            return False
 
 
 class APIKeySerializer(serializers.ModelSerializer):

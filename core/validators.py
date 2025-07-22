@@ -17,7 +17,7 @@ def validate_alphanumeric(value):
 
 
 class CustomPasswordValidator:
-    def validate(self, password, user=None):
+    def validate(self, password):
         if len(password) < 8:
             raise ValidationError("Password must be at least 8 characters long.")
         if not any(char.isdigit() for char in password):

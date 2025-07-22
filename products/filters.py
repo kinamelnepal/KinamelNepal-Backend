@@ -28,7 +28,6 @@ class ProductFilter(django_filters.FilterSet):
     new_price = django_filters.NumberFilter()
     old_price = django_filters.NumberFilter()
     location = django_filters.ChoiceFilter(choices=Product.LOCATION_CHOICES)
-    # category = django_filters.CharFilter(field_name='category', lookup_expr='exact')
     category = django_filters.CharFilter(method="filter_category")
 
     # Range filters
