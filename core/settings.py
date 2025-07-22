@@ -15,6 +15,7 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
 from django.templatetags.static import static
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,6 +38,10 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://kinamelnepal-backend-app-q4767.ondigitalocean.app",
+]
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "X-API-KEY",
 ]
 
 # Application definition
